@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/philproctor/confluence-cli/utility"
+	"github.com/perolo/confluence-prop/utility"
 )
 
 //AddOrUpdatePage checks for an existing page then calls AddPage or UpdatePage depending on the result
