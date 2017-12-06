@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/perolo/confluence-cli/client"
+	"github.com/perolo/confluence-prop/client"
 )
 
 var config = client.ConfluenceConfig{}
