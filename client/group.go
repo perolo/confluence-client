@@ -35,7 +35,6 @@ func  (c *ConfluenceClient) GetGroups() (*GroupsType) {
 	u = fmt.Sprintf("/rest/extender/1.0/group/getGroups")
 
 	groups := new(GroupsType)
-	c.debug=true
 	res := c.doRequest("GET", u , nil, &groups)
 
 	fmt.Println("res: " + string(res))
@@ -48,7 +47,6 @@ func  (c *ConfluenceClient) GetGroupMembers(groupname string ) (*MembersType) {
 	u = fmt.Sprintf("/rest/extender/1.0/group/getUsers/" +groupname)
 
 	members := new(MembersType)
-	c.debug=true
 	res := c.doRequest("GET", u , nil, &members)
 
 	fmt.Println("res: " + string(res))
@@ -64,7 +62,6 @@ func  (c *ConfluenceClient) AddGroup(groupname string ) (*AddGroupsResponseType)
 	payload.Groups = append(payload.Groups, groupname)
 
 	groups := new(AddGroupsResponseType)
-	c.debug=true
 	res := c.doRequest("POST", u , payload, &groups)
 
 	fmt.Println("res: " + string(res))
@@ -81,7 +78,6 @@ func  (c *ConfluenceClient) AddGroupMember(groupname string, member string ) (*A
 	payload.Users = append(payload.Users, member)
 
 	members := new(AddGroupsResponseType)
-	c.debug=true
 	res := c.doRequest("POST", u , payload, &members)
 
 	fmt.Println("res: " + string(res))
