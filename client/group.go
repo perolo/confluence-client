@@ -54,12 +54,12 @@ func  (c *ConfluenceClient) GetGroupMembers(groupname string ) (*MembersType) {
 	return members
 }
 
-func  (c *ConfluenceClient) AddGroup(groupname string ) (*AddGroupsResponseType) {
+func  (c *ConfluenceClient) AddGroups(groupnames []string ) (*AddGroupsResponseType) {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/addGroups")
 
 	var payload = new (AddGroupsType)
-	payload.Groups = append(payload.Groups, groupname)
+	payload.Groups = append(payload.Groups, groupnames...)
 
 	groups := new(AddGroupsResponseType)
 	res := c.doRequest("POST", u , payload, &groups)
@@ -70,17 +70,17 @@ func  (c *ConfluenceClient) AddGroup(groupname string ) (*AddGroupsResponseType)
 }
 
 
-func  (c *ConfluenceClient) AddGroupMember(groupname string, member string ) (*AddGroupsResponseType) {
+func  (c *ConfluenceClient) AddGroupMembers(groupname string, members []string ) (*AddGroupsResponseType) {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/addUsers/" +groupname)
 
 	var payload = new (AddUsersType)
-	payload.Users = append(payload.Users, member)
+	payload.Users = append(payload.Users, members...)
 
-	members := new(AddGroupsResponseType)
+	response := new(AddGroupsResponseType)
 	res := c.doRequest("POST", u , payload, &members)
 
 	fmt.Println("res: " + string(res))
 
-	return members
+	return response
 }
