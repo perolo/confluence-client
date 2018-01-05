@@ -42,7 +42,7 @@ func Client(config *ConfluenceConfig) *ConfluenceClient {
 	}
 }
 
-func (c *ConfluenceClient) doRequest(method, url string, content, responseContainer interface{}) []byte {
+func (c *ConfluenceClient) doRequest(method, url string, content, responseContainer interface{}) ([]byte,  *http.Response){
 	b := new(bytes.Buffer)
 	if content != nil {
 		json.NewEncoder(b).Encode(content)
@@ -75,9 +75,10 @@ func (c *ConfluenceClient) doRequest(method, url string, content, responseContai
 	if err != nil {
 		log.Fatal(err)
 	}
-	if response.StatusCode != 200 {
-		log.Fatal("Bad response code received from server: ", response.Status)
+	if response.StatusCode < 200 || response.StatusCode > 300 {
+		log.Println("Bad response code received from server: ", response.Status)
+	} else {
+		json.Unmarshal(contents, responseContainer)
 	}
-	json.Unmarshal(contents, responseContainer)
-	return contents
+	return contents, response
 }

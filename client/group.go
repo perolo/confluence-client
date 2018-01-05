@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"net/http"
 )
 
 type GroupsType struct {
@@ -35,7 +36,7 @@ func  (c *ConfluenceClient) GetGroups() (*GroupsType) {
 	u = fmt.Sprintf("/rest/extender/1.0/group/getGroups")
 
 	groups := new(GroupsType)
-	res := c.doRequest("GET", u , nil, &groups)
+	res, _ := c.doRequest("GET", u , nil, &groups)
 
 	fmt.Println("res: " + string(res))
 
@@ -47,7 +48,7 @@ func  (c *ConfluenceClient) GetGroupMembers(groupname string ) (*MembersType) {
 	u = fmt.Sprintf("/rest/extender/1.0/group/getUsers/" +groupname)
 
 	members := new(MembersType)
-	res := c.doRequest("GET", u , nil, &members)
+	res, _ := c.doRequest("GET", u , nil, &members)
 
 	fmt.Println("res: " + string(res))
 
@@ -62,7 +63,7 @@ func  (c *ConfluenceClient) AddGroups(groupnames []string ) (*AddGroupsResponseT
 	payload.Groups = append(payload.Groups, groupnames...)
 
 	groups := new(AddGroupsResponseType)
-	res := c.doRequest("POST", u , payload, &groups)
+	res, _ := c.doRequest("POST", u , payload, &groups)
 
 	fmt.Println("res: " + string(res))
 
@@ -78,9 +79,10 @@ func  (c *ConfluenceClient) AddGroupMembers(groupname string, members []string )
 	payload.Users = append(payload.Users, members...)
 
 	response := new(AddGroupsResponseType)
-	res := c.doRequest("POST", u , payload, &members)
+	res, _ := c.doRequest("POST", u , payload, &members)
 
 	fmt.Println("res: " + string(res))
 
 	return response
 }
+
