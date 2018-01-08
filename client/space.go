@@ -20,9 +20,9 @@ type SpaceType struct {
 	Key        string `json:"key,omitempty" structs:"key,omitempty"`
 	Name       string `json:"name,omitempty" structs:"name,omitempty"`
 	Type       string `json:"type,omitempty" structs:"type,omitempty"`
-	Links      string `json:"_links,omitempty" structs:"_links,omitempty"`
+	Links      map[string]string `json:"_links,omitempty" structs:"_links,omitempty"`
 	Start      string `json:"start,omitempty" structs:"start,omitempty"`
-	Expandable string `json:"_expandable,omitempty" structs:"_expandable,omitempty"`
+	Expandable map[string]string `json:"_expandable,omitempty" structs:"_expandable,omitempty"`
 }
 
 type ConfluenceSpacePropertyResult struct {
