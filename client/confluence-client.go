@@ -82,3 +82,39 @@ func (c *ConfluenceClient) doRequest(method, url string, content, responseContai
 	}
 	return contents, response
 }
+
+
+func (c *ConfluenceClient) doGetPage(method, url string, content interface{}) ([]byte,  *http.Response){
+	b := new(bytes.Buffer)
+	if content != nil {
+		json.NewEncoder(b).Encode(content)
+	}
+	furl := c.baseURL + url
+	if c.debug {
+		log.Println("Full URL", furl)
+		log.Println("JSON Content:", b.String())
+	}
+	request, err := http.NewRequest(method, furl, b)
+	request.SetBasicAuth(c.username, c.password)
+	if c.debug {
+		log.Println("Sending request to services...")
+	}
+	response, err := c.client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+	if c.debug {
+		log.Println("Response received, processing response...")
+		log.Println("Response status code is", response.StatusCode)
+		log.Println(response.Status)
+	}
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if response.StatusCode < 200 || response.StatusCode > 300 {
+		log.Println("Bad response code received from server: ", response.Status)
+	}
+	return contents, response
+}
