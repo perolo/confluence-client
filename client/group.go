@@ -25,6 +25,12 @@ type AddGroupsResponseType struct {
 	Message         string `json:"message,omitempty" structs:"message,omitempty"`
 	Status          string `json:"status,omitempty" structs:"status,omitempty"`
 }
+type AddMembersResponseType struct {
+	UsersAdded   []string `json:"usersAdded,omitempty"  structs:"usersAdded,omitempty`
+	UsersSkipped []string `json:"usersSkipped,omitempty"  structs:"usersSkipped,omitempty`
+	Message         string `json:"message,omitempty" structs:"message,omitempty"`
+	Status          string `json:"status,omitempty" structs:"status,omitempty"`
+}
 
 type AddUsersType struct {
 	Users      []string `json:"users,omitempty"  structs:"users,omitempty`
@@ -70,15 +76,15 @@ func  (c *ConfluenceClient) AddGroups(groupnames []string ) (*AddGroupsResponseT
 }
 
 
-func  (c *ConfluenceClient) AddGroupMembers(groupname string, members []string ) (*AddGroupsResponseType) {
+func  (c *ConfluenceClient) AddGroupMembers(groupname string, members []string ) (*AddMembersResponseType) {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/addUsers/" +groupname)
 
 	var payload = new (AddUsersType)
 	payload.Users = append(payload.Users, members...)
 
-	response := new(AddGroupsResponseType)
-	res, _ := c.doRequest("POST", u , payload, &members)
+	response := new(AddMembersResponseType)
+	res, _ := c.doRequest("POST", u , payload, &response)
 
 	fmt.Println("res: " + string(res))
 
