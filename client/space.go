@@ -2,18 +2,20 @@ package client
 
 import (
 	"fmt"
+	"net/http"
 )
 
 type SpaceOptions struct {
 	Limit int
 	Start int
+	Label string
 }
 
 type ConfluenceSpaceResult struct {
 	Results []SpaceType `json:"results,omitempty" structs:"results,omitempty"`
 	Start   int         `json:"start,omitempty" structs:"start,omitempty"`
 	Limit   int         `json:"limit,omitempty" structs:"limit,omitempty"`
-	Size    int         `json:"size,omitempty"  structs:"size,omitempty`
+	Size    int         `json:"size,omitempty"  structs:"size,omitempty"`
 }
 type SpaceType struct {
 	Id         int    `json:"id,omitempty" structs:"id,omitempty"`
@@ -29,10 +31,14 @@ type ConfluenceSpacePropertyResult struct {
 	Results []string `json:"results,omitempty" structs:"results,omitempty"`
 	Start   int         `json:"start,omitempty" structs:"start,omitempty"`
 	Limit   int         `json:"limit,omitempty" structs:"limit,omitempty"`
-	Size    int         `json:"size,omitempty"  structs:"size,omitempty`
+	Size    int         `json:"size,omitempty"  structs:"size,omitempty"`
 	Links      string `json:"_links,omitempty" structs:"_links,omitempty"`
 	Base      string `json:"base,omitempty" structs:"base,omitempty"`
 	Context      string `json:"context,omitempty" structs:"context,omitempty"`
+}
+
+type WatchResponseType struct {
+	Watching bool `json:"watching,omitempty" structs:"watching,omitempty"`
 }
 
 //GetSpaces searches for pages in the space that meet the specified criteria
@@ -41,7 +47,12 @@ func (c *ConfluenceClient) GetSpaces(options *SpaceOptions) (results *Confluence
 	if options == nil {
 		req = "/rest/api/space"
 	} else {
-		req = fmt.Sprintf("/rest/api/space?start=%d&limit=%d", options.Start, options.Limit)
+		if options.Label == "" {
+			req = fmt.Sprintf("/rest/api/space?start=%d&limit=%d", options.Start, options.Limit)
+		} else {
+			req = fmt.Sprintf("/rest/api/space?start=%d&limit=%d&label=%s", options.Start, options.Limit, options.Label)
+		}
+
 	}
 	results = new (ConfluenceSpaceResult)
 	c.doRequest("GET", req, nil, results)
@@ -57,3 +68,21 @@ func (c *ConfluenceClient) GetSpaceProperties(spacekey string ) (results *Conflu
 	c.doRequest("GET", req, nil, results)
 	return results
 }
+
+func (c *ConfluenceClient) AddWatcher(spaceKey string, user string) {
+	var req string
+	req = fmt.Sprintf("/rest/api/user/watch/space/%s?username=%s", spaceKey, user)
+
+	var res *http.Response
+	c.doRequest("POST", req, nil, res)
+}
+
+func (c *ConfluenceClient) GetWatcher(spaceKey string, user string) (results *WatchResponseType){
+	var req string
+	req = fmt.Sprintf("/rest/api/user/watch/space/%s?username=%s", spaceKey, user)
+
+	results = new (WatchResponseType)
+	c.doRequest("GET", req, nil, results)
+	return results
+}
+
