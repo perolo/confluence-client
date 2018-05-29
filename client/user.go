@@ -1,6 +1,9 @@
 package client
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 /*
 {
@@ -40,33 +43,33 @@ type UserType struct {
 }
 
 type UserCreateType struct {
-	UserName     string `json:"name,omitempty" structs:"name,omitempty"`
-	Password     string `json:"password,omitempty"  structs:"password,omitempty`
-	Email        string `json:"emailAddress,omitempty"  structs:"emailAddress,omitempty`
-	DisplayName  string `json:"displayName,omitempty"  structs:"displayName,omitempty`
+	UserName     string `json:"name,omitempty"          structs:"name,omitempty"`
+	Password     string `json:"password,omitempty"      structs:"password,omitempty`
+	Email        string `json:"email,omitempty"         structs:"email,omitempty`
+	DisplayName  string `json:"fullName,omitempty"      structs:"fullName,omitempty`
 	Notification string `json:"notification,omitempty"  structs:"notification,omitempty`
 }
 
-func (c *ConfluenceClient) GetUser(name string) (*UserType) {
+func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 	var u string
 	u = fmt.Sprintf("/rest/api/user?username=" + name)
 
 	user := new(UserType)
-	res, _ := c.doRequest("GET", u, nil, &user)
+	res, res2 := c.doRequest("GET", u, nil, &user)
 
 	fmt.Println("res: " + string(res))
 
-	return user
+	return user, res2
 }
-func (c *ConfluenceClient) CreateUser(newUser UserCreateType) (*UserCreateType) {
+func (c *ConfluenceClient) CreateUser(newUser UserCreateType) (*http.Response) {
 	var u string
-	u = fmt.Sprintf("/rest/api/user")
+	u = fmt.Sprintf("/rest/extender/1.0/user/add")
 
 	//	payload =
 	user := new(UserCreateType)
-	res, _ := c.doRequest("POST", u, newUser, &user)
+	res, res2 := c.doRequest("PUT", u, newUser, &user)
 
 	fmt.Println("res: " + string(res))
 
-	return user
+	return res2
 }
