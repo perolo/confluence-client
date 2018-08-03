@@ -21,7 +21,7 @@ type ConfluencePageBodyView struct {
 //ConfluencePageBody holds the page contents itself
 type ConfluencePageBody struct {
 	Storage *ConfluencePageBodyStorage `json:"storage,omitempty"`
-	View *ConfluencePageBodyView `json:"view,omitempty"`
+	View    *ConfluencePageBodyView    `json:"view,omitempty"`
 }
 
 //ConfluencePageVersion holds the version information for a page
@@ -52,6 +52,11 @@ type ConfluencePageSearch struct {
 	Start   int64            `json:"start,omitempty"`
 	Limit   int64            `json:"limit,omitempty"`
 	Size    int64            `json:"size,omitempty"`
+}
+
+type ConfluencePages struct {
+	Page     ConfluencePageSearch `json:"page,omitempty"`
+	BlogPost ConfluencePageSearch `json:"blogpost,omitempty"`
 }
 
 func newPage(title, spaceKey string) *ConfluencePage {

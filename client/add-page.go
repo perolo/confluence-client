@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/perolo/confluence-prop/utility"
+	"net/http"
 )
 
 //AddOrUpdatePage checks for an existing page then calls AddPage or UpdatePage depending on the result
@@ -64,6 +65,19 @@ func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly
 	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
 	c.doRequest("PUT", "/rest/api/content/"+ID, page, response)
 	//log.Println("ConfluencePage Object Response", response)
+}
+
+func (c *ConfluenceClient) DeletePage( title string, spaceKey string) (bool) {
+	results := c.SearchPages(title, spaceKey)
+	if results.Size == 1 {
+		log.Println("Page found, Deleting page...")
+		var response *http.Response
+		c.doRequest("DELETE", "/rest/api/content/"+results.Results[0].ID, nil, response)
+		return true
+	} else {
+		return false
+	}
+
 }
 
 func getBodyFromFile(filepath string, bodyOnly, stripImgs bool) string {
