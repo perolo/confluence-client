@@ -72,3 +72,18 @@ func newPage(title, spaceKey string) *ConfluencePage {
 		},
 	}
 }
+
+type ConfluenceAttachment struct {
+	Title  string            `json:"title,omitempty"`
+	Type   string            `json:"type,omitempty"`
+	ID     string            `json:"id,omitempty"`
+	Status string            `json:"status,omitempty"`
+	Links  map[string]string `json:"_links,omitempty"`
+}
+
+type ConfluenceAttachmnetSearch struct {
+	Results []ConfluenceAttachment `json:"results,omitempty"`
+	Start   int64                  `json:"start,omitempty"`
+	Limit   int64                  `json:"limit,omitempty"`
+	Size    int64                  `json:"size,omitempty"`
+}
