@@ -6,10 +6,9 @@ import (
 	"os"
 	"bytes"
 	"mime/multipart"
-	"path/filepath"
-	"io"
-	"log"
+			"log"
 	"io/ioutil"
+	"io"
 	)
 
 type PageOptions struct {
@@ -76,38 +75,41 @@ func (c *ConfluenceClient) UpdateAttachment(title, spaceKey, filepath string, bo
 */
 
 
+// Creates a new file upload http request with optional extra params
 func newfileUploadRequest(uri string, params map[string]string, paramName, path string) (*http.Request, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile2(paramName, filepath.Base(path))
+	fileContents, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
-	_, err = io.Copy(part, file)
+	fi, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	file.Close()
+
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(paramName, fi.Name())
+	if err != nil {
+		return nil, err
+	}
+	part.Write(fileContents)
 
 	for key, val := range params {
-		writer.WriteField2(key, val)
+		_ = writer.WriteField(key, val)
 	}
 	err = writer.Close()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Content: %s\n", body)
-
-	req, err := http.NewRequest("POST", uri, body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("X-Atlassian-Token", "nocheck")
-	return req, err
+	return http.NewRequest("POST", uri, body)
 }
 
-
-func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath string) ([]byte){
+func (c *ConfluenceClient) UpdateAttachment2(id string, attid string, filepath string) ([]byte){
 //	response := &ConfluenceAttachmnetSearch{}
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id,attid)
 //	c.doRequest("POST", path, bbody, response)
@@ -116,15 +118,115 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath st
 	//file=@myfile.txt" -F "minorEdit=true" -F "comment
 	extraParams := map[string]string{
 //		"file":       "data.json",
-		"minorEdit":      "false",
-		"comment": "Testing comment",
+		"minorEdit":      "\"false\"",
+		"comment": "\"Testing comment\"",
 	}
-	htt, err := newfileUploadRequest(path, extraParams, "file", filepath )
+//	htt, err := newfileUploadRequest(path, extraParams, "file", filepath )
+	htt, err := newfileUploadRequest(path, extraParams, "file", "data.json" )
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	htt.Header.Set("X-Atlassian-Token", "nocheck")
+
 	response, err := c.client.Do(htt)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+	if c.debug {
+		log.Println("Response received, processing response...")
+		log.Println("Response status code is", response.StatusCode)
+		log.Println(response.Status)
+	}
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	/*
+	if response.StatusCode < 200 || response.StatusCode > 300 {
+		log.Println("Bad response code received from server: ", response.Status)
+	} else {
+		json.Unmarshal(contents, responseContainer)
+	}
+	return contents, response	*/
+	return contents
+}
+func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath string) ([]byte){
+	//	response := &ConfluenceAttachmnetSearch{}
+	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id,attid)
+
+
+	// Open the file
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	// Close the file later
+	defer file.Close()
+
+	// Buffer to store our request body as bytes
+	var requestBody bytes.Buffer
+
+	// Create a multipart writer
+	multiPartWriter := multipart.NewWriter(&requestBody)
+
+	// Initialize the file field
+	fileWriter, err := multiPartWriter.CreateFormFile("file", "data.json")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Copy the actual file content to the field field's writer
+	_, err = io.Copy(fileWriter, file)
+	if err != nil {
+		log.Fatalln(err)
+	}
+//	"minorEdit":      "\"false\"",
+//		"comment": "\"Testing comment\"",
+
+	// Populate other fields
+	fieldWriter, err := multiPartWriter.CreateFormField("minorEdit")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = fieldWriter.Write([]byte("true"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	// Populate other fields
+	fieldWriter2, err := multiPartWriter.CreateFormField("comment")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+//	_, err = fieldWriter2.Write([]byte("\"Test7\""))
+	_, err = fieldWriter2.Write([]byte("Test7"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// We completed adding the file and the fields, let's close the multipart writer
+	// So it writes the ending boundary
+	multiPartWriter.Close()
+
+	// By now our original request body should have been populated, so let's just use it with our custom request
+	req, err := http.NewRequest("POST", c.baseURL+ path, &requestBody)
+	//req, resp := c.doGetPage2("POST", path, &requestBody)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(requestBody.String())
+	// We need to set the content type from the writer, it includes necessary boundary as well
+	req.Header.Set("Content-Type", multiPartWriter.FormDataContentType())
+
+	req.Header.Set("X-Atlassian-Token", "nocheck")
+	req.SetBasicAuth(c.username, c.password)
+
+	// Do the request
+	//client := &http.Client{}
+	response, err := c.client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
