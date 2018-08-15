@@ -6,10 +6,11 @@ import (
 	"os"
 	"bytes"
 	"mime/multipart"
-			"log"
+	"log"
 	"io/ioutil"
 	"io"
-	)
+	"encoding/json"
+)
 
 type PageOptions struct {
 	// StartAt: The starting index of the returned projects. Base index: 0.
@@ -20,7 +21,7 @@ type PageOptions struct {
 	Type string `url:"type,omitempty"`
 }
 
-//import "net/url"
+
 
 //SearchPages searches for pages in the space that meet the specified criteria
 func (c *ConfluenceClient) GetPageById(id string) (results *ConfluencePage) {
@@ -30,8 +31,6 @@ func (c *ConfluenceClient) GetPageById(id string) (results *ConfluencePage) {
 }
 
 func (c *ConfluenceClient) GetPages(space string, options *PageOptions) (results *ConfluencePages) {
-	//path := fmt.Sprintf("rest/api/space/%s/content", space)
-	//type=page&start=25&limit=3
 	var path string
 	if options == nil {
 		path = fmt.Sprintf("/rest/api/space/%s/content", space)
@@ -50,117 +49,36 @@ func (c *ConfluenceClient) GetPage(url string) ([]byte,  *http.Response){
 	return contents, response
 }
 
-func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch) {
+func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch, data [] byte, err error) {
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment??filename=%s", id, name)
 
 	results = &ConfluenceAttachmnetSearch{}
 	c.doRequest("GET", path, nil, results)
-	return results
-}
-/*
-func (c *ConfluenceClient) UpdateAttachment(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ID string, version, ancestor int64) {
-	page := newPage(title, spaceKey)
-	page.ID = ID
-	page.Version = &ConfluencePageVersion{version}
-	if ancestor > 0 {
-		page.Ancestors = []ConfluencePageAncestor{
-			ConfluencePageAncestor{ancestor},
+
+	if results.Size == 1 {
+		fmt.Printf("Attachment: %s\n", results.Results[0].Title)
+
+		content, resp := c.GetPage(results.Results[0].Links["download"])
+
+		if resp.StatusCode == 200 {
+			fmt.Printf("Content: %s\n", content)
+			return results, content, nil
+		} else {
+			return results, nil, fmt.Errorf("Bad response code received from server: %v", resp.Status)
 		}
 	}
-	response := &ConfluencePage{}
-	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
-	c.doRequest("PUT", "/rest/api/content/"+ID, page, response)
-	//log.Println("ConfluencePage Object Response", response)
-}
-*/
-
-
-// Creates a new file upload http request with optional extra params
-func newfileUploadRequest(uri string, params map[string]string, paramName, path string) (*http.Request, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	fileContents, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-	fi, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-	file.Close()
-
-	body := new(bytes.Buffer)
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile(paramName, fi.Name())
-	if err != nil {
-		return nil, err
-	}
-	part.Write(fileContents)
-
-	for key, val := range params {
-		_ = writer.WriteField(key, val)
-	}
-	err = writer.Close()
-	if err != nil {
-		return nil, err
-	}
-	return http.NewRequest("POST", uri, body)
+	return results, nil, fmt.Errorf("Failed to get attachment: %s", name)
 }
 
-func (c *ConfluenceClient) UpdateAttachment2(id string, attid string, filepath string) ([]byte){
-//	response := &ConfluenceAttachmnetSearch{}
+
+func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAttachment, err error){
+
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id,attid)
-//	c.doRequest("POST", path, bbody, response)
-//	return  response
-
-	//file=@myfile.txt" -F "minorEdit=true" -F "comment
-	extraParams := map[string]string{
-//		"file":       "data.json",
-		"minorEdit":      "\"false\"",
-		"comment": "\"Testing comment\"",
-	}
-//	htt, err := newfileUploadRequest(path, extraParams, "file", filepath )
-	htt, err := newfileUploadRequest(path, extraParams, "file", "data.json" )
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	htt.Header.Set("X-Atlassian-Token", "nocheck")
-
-	response, err := c.client.Do(htt)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer response.Body.Close()
-	if c.debug {
-		log.Println("Response received, processing response...")
-		log.Println("Response status code is", response.StatusCode)
-		log.Println(response.Status)
-	}
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	/*
-	if response.StatusCode < 200 || response.StatusCode > 300 {
-		log.Println("Bad response code received from server: ", response.Status)
-	} else {
-		json.Unmarshal(contents, responseContainer)
-	}
-	return contents, response	*/
-	return contents
-}
-func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath string) ([]byte){
-	//	response := &ConfluenceAttachmnetSearch{}
-	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id,attid)
-
 
 	// Open the file
-	file, err := os.Open(filepath)
+	file, err := os.Open(newFilePath)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to open file %s", newFilePath)
 	}
 	// Close the file later
 	defer file.Close()
@@ -172,39 +90,36 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath st
 	multiPartWriter := multipart.NewWriter(&requestBody)
 
 	// Initialize the file field
-	fileWriter, err := multiPartWriter.CreateFormFile("file", "data.json")
+	fileWriter, err := multiPartWriter.CreateFormFile("file", attName)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form file")
 	}
 
 	// Copy the actual file content to the field field's writer
 	_, err = io.Copy(fileWriter, file)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to copy file %s", newFilePath)
 	}
-//	"minorEdit":      "\"false\"",
-//		"comment": "\"Testing comment\"",
 
 	// Populate other fields
 	fieldWriter, err := multiPartWriter.CreateFormField("minorEdit")
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field ")
 	}
 
 	_, err = fieldWriter.Write([]byte("true"))
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field value")
 	}
 	// Populate other fields
 	fieldWriter2, err := multiPartWriter.CreateFormField("comment")
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field ")
 	}
 
-//	_, err = fieldWriter2.Write([]byte("\"Test7\""))
-	_, err = fieldWriter2.Write([]byte("Test7"))
+	_, err = fieldWriter2.Write([]byte(com))
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field value")
 	}
 
 	// We completed adding the file and the fields, let's close the multipart writer
@@ -213,11 +128,13 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath st
 
 	// By now our original request body should have been populated, so let's just use it with our custom request
 	req, err := http.NewRequest("POST", c.baseURL+ path, &requestBody)
-	//req, resp := c.doGetPage2("POST", path, &requestBody)
+
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, err
 	}
-	fmt.Println(requestBody.String())
+
+	//fmt.Println(requestBody.String())
+
 	// We need to set the content type from the writer, it includes necessary boundary as well
 	req.Header.Set("Content-Type", multiPartWriter.FormDataContentType())
 
@@ -225,10 +142,9 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath st
 	req.SetBasicAuth(c.username, c.password)
 
 	// Do the request
-	//client := &http.Client{}
 	response, err := c.client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 	defer response.Body.Close()
 	if c.debug {
@@ -236,16 +152,16 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, filepath st
 		log.Println("Response status code is", response.StatusCode)
 		log.Println(response.Status)
 	}
-	contents, err := ioutil.ReadAll(response.Body)
+	contents, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		return contents, nil, err
 	}
-	/*
+
 	if response.StatusCode < 200 || response.StatusCode > 300 {
 		log.Println("Bad response code received from server: ", response.Status)
+		return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
 	} else {
-		json.Unmarshal(contents, responseContainer)
+		json.Unmarshal(contents, retType)
 	}
-	return contents, response	*/
-	return contents
+	return contents, retType, nil
 }
