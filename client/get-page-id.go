@@ -70,6 +70,30 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 	return results, nil, fmt.Errorf("Failed to get attachment: %s", name)
 }
 
+func (c *ConfluenceClient) GetPageAttachmentById2(id string, name string) ( retv *ConfluenceAttachment, data [] byte, err error) {
+	path := fmt.Sprintf("/rest/api/content/%s/child/attachment??filename=%s", id, name)
+
+	results := &ConfluenceAttachmnetSearch{}
+	c.doRequest("GET", path, nil, results)
+
+	for _, theRes := range results.Results {
+
+		fmt.Printf("Attachment: %s\n", theRes.Title)
+
+		if theRes.Title == name {
+			content, resp := c.GetPage(theRes.Links["download"])
+
+			if resp.StatusCode == 200 {
+				//fmt.Printf("Content: %s\n", content)
+				return &theRes, content, nil
+			} else {
+				return &theRes, nil, fmt.Errorf("Bad response code received from server: %v", resp.Status)
+			}
+		}
+	}
+	return nil, nil, fmt.Errorf("Failed to get attachment: %s", name)
+}
+
 
 func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAttachment, err error){
 

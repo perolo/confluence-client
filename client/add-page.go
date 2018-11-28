@@ -26,15 +26,16 @@ func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 			ancestorID = int64(ancestorIDint)
 		}
 	}
+	var res bool = true
 	if results.Size > 0 {
 		log.Println("Page found, updating page...")
 		item := results.Results[0]
-		c.UpdatePage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, item.ID, item.Version.Number+1, ancestorID)
+		res = c.UpdatePage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, item.ID, item.Version.Number+1, ancestorID)
 	} else {
 		log.Println("Page not found, adding page...")
 		c.AddPage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, ancestorID)
 	}
-	return true
+	return res
 }
 
 //AddPage adds a new page to the space with the given title
@@ -52,7 +53,7 @@ func (c *ConfluenceClient) AddPage(title, spaceKey, filepath string, bodyOnly, s
 }
 
 //UpdatePage adds a new page to the space with the given title
-func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ID string, version, ancestor int64) {
+func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ID string, version, ancestor int64) bool {
 	page := newPage(title, spaceKey)
 	page.ID = ID
 	page.Version = &ConfluencePageVersion{version}
@@ -64,7 +65,12 @@ func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly
 	response := &ConfluencePage{}
 	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
 	c.doRequest("PUT", "/rest/api/content/"+ID, page, response)
-	//log.Println("ConfluencePage Object Response", response)
+	log.Println("ConfluencePage Object Response", response)
+	if response.Status != "current" {
+		return false
+	}
+	return true
+
 }
 
 func (c *ConfluenceClient) DeletePage( title string, spaceKey string) (bool) {
