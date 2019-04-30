@@ -43,6 +43,19 @@ func (c *ConfluenceClient) GetPages(space string, options *PageOptions) (results
 	return results
 }
 
+func (c *ConfluenceClient) GetContent(content string, options *PageOptions) (results *ConfluencePageSearch) {
+	var path string
+	if options == nil {
+		path = fmt.Sprintf("/rest/api/content?%s", content)
+	} else {
+		path = fmt.Sprintf("/rest/api/content?%s&start=%v&limit=%v", content, options.Start, options.Limit)
+	}
+
+	results = &ConfluencePageSearch{}
+	c.doRequest("GET", path, nil, results)
+	return results
+}
+
 
 func (c *ConfluenceClient) GetPage(url string) ([]byte,  *http.Response){
 	contents, response := c.doGetPage("GET", url, nil)
