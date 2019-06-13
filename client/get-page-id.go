@@ -74,7 +74,7 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 		content, resp := c.GetPage(results.Results[0].Links["download"])
 
 		if resp.StatusCode == 200 {
-			fmt.Printf("Content: %s\n", content)
+//			fmt.Printf("Content: %s\n", content)
 			return results, content, nil
 		} else {
 			return results, nil, fmt.Errorf("Bad response code received from server: %v", resp.Status)
