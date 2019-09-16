@@ -55,9 +55,9 @@ func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 	u = fmt.Sprintf("/rest/api/user?username=" + name)
 
 	user := new(UserType)
-	res, res2 := c.doRequest("GET", u, nil, &user)
+	_, res2 := c.doRequest("GET", u, nil, &user)
 
-	fmt.Println("res: " + string(res))
+//	fmt.Println("res: " + string(res))
 
 	return user, res2
 }
