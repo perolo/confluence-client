@@ -30,6 +30,13 @@ func (c *ConfluenceClient) GetPageById(id string) (results *ConfluencePage) {
 	return results
 }
 
+//SearchPages searches for pages in the space that meet the specified criteria
+func (c *ConfluenceClient) GetPageByIdAncestor(id string) (results *ConfluencePage2) {
+	results = &ConfluencePage2{}
+	c.doRequest("GET", "/rest/api/content/"+id+"?expand=ancestors", nil, results)
+	return results
+}
+
 func (c *ConfluenceClient) GetPages(space string, options *PageOptions) (results *ConfluencePages) {
 	var path string
 	if options == nil {
