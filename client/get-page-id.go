@@ -70,7 +70,7 @@ func (c *ConfluenceClient) GetPage(url string) ([]byte,  *http.Response){
 }
 
 func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch, data [] byte, err error) {
-	path := fmt.Sprintf("/rest/api/content/%s/child/attachment??filename=%s", id, name)
+	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
 
 	results = &ConfluenceAttachmnetSearch{}
 	c.doRequest("GET", path, nil, results)
@@ -91,7 +91,7 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 }
 
 func (c *ConfluenceClient) GetPageAttachmentById2(id string, name string) ( retv *ConfluenceAttachment, data [] byte, err error) {
-	path := fmt.Sprintf("/rest/api/content/%s/child/attachment??filename=%s", id, name)
+	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
 
 	results := &ConfluenceAttachmnetSearch{}
 	c.doRequest("GET", path, nil, results)
