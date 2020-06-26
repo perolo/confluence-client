@@ -11,31 +11,44 @@ import (
 
 //AddOrUpdatePage checks for an existing page then calls AddPage or UpdatePage depending on the result
 func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
-	results := c.SearchPages(options.Title, options.SpaceKey)
-	ancestorID := options.AncestorID
-	if options.AncestorTitle != "" {
-		ancestorResults := c.SearchPages(options.AncestorTitle, options.SpaceKey)
-		if ancestorResults.Size < 1 {
-			log.Fatal("Ancestor title not found!")
-		} else {
-			ancestorIDint, err := strconv.Atoi(ancestorResults.Results[0].ID)
-			log.Println("Found ancestor ID", ancestorIDint)
-			if err != nil {
-				log.Fatal(err)
+	var retry = 0;
+
+	for retry < 3 {
+		results := c.SearchPages(options.Title, options.SpaceKey)
+		ancestorID := options.AncestorID
+		if options.AncestorTitle != "" {
+			ancestorResults := c.SearchPages(options.AncestorTitle, options.SpaceKey)
+			if ancestorResults.Size < 1 {
+				log.Fatal("Ancestor title not found!")
+			} else {
+				ancestorIDint, err := strconv.Atoi(ancestorResults.Results[0].ID)
+				log.Println("Found ancestor ID", ancestorIDint)
+				if err != nil {
+					log.Fatal(err)
+				}
+				ancestorID = int64(ancestorIDint)
 			}
-			ancestorID = int64(ancestorIDint)
+		}
+		var res bool = true
+		if results.Size == 1 {
+			log.Println("Page found, updating page...")
+			item := results.Results[0]
+			res = c.UpdatePage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, item.ID, item.Version.Number+1, ancestorID)
+		} else if results.Size == 0{
+			log.Println("Page not found, adding page...")
+			c.AddPage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, ancestorID)
+		} else {
+			log.Println("Multiple Pages found, retry")
+			res = false
+		}
+
+		if res==true {
+			return res
+		} else {
+			retry++
 		}
 	}
-	var res bool = true
-	if results.Size > 0 {
-		log.Println("Page found, updating page...")
-		item := results.Results[0]
-		res = c.UpdatePage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, item.ID, item.Version.Number+1, ancestorID)
-	} else {
-		log.Println("Page not found, adding page...")
-		c.AddPage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, ancestorID)
-	}
-	return res
+	return false
 }
 
 //AddPage adds a new page to the space with the given title
