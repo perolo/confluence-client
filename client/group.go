@@ -41,9 +41,9 @@ func (c *ConfluenceClient) GetGroups() *GroupsType {
 	u = fmt.Sprintf("/rest/extender/1.0/group/getGroups")
 
 	groups := new(GroupsType)
-	res, _ := c.doRequest("GET", u, nil, &groups)
+	c.doRequest("GET", u, nil, &groups)
 
-	fmt.Println("res: " + string(res))
+	//fmt.Println("res: " + string(res))
 
 	return groups
 }
