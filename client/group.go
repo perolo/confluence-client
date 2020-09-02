@@ -5,35 +5,35 @@ import (
 )
 
 type GroupsType struct {
-	Groups  []string `json:"groups,omitempty"  structs:"groups,omitempty`
+	Groups  []string `json:"groups,omitempty"  structs:"groups,omitempty"`
 	Message string   `json:"message,omitempty" structs:"message,omitempty"`
 	Status  string   `json:"status,omitempty" structs:"status,omitempty"`
 }
 
 type MembersType struct {
-	Users  []map[string]string `json:"users,omitempty"  structs:"users,omitempty`
+	Users  []map[string]string `json:"users,omitempty"  structs:"users,omitempty"`
 	Status string              `json:"status,omitempty" structs:"status,omitempty"`
 }
 
 type AddGroupsType struct {
-	Groups []string `json:"groups,omitempty"  structs:"groups,omitempty`
+	Groups []string `json:"groups,omitempty"  structs:"groups,omitempty"`
 }
 
 type AddGroupsResponseType struct {
-	GroupsAdded   []string `json:"groupsAdded,omitempty"  structs:"groupsAdded,omitempty`
-	GroupsSkipped []string `json:"groupsSkipped,omitempty"  structs:"groupsSkipped,omitempty`
+	GroupsAdded   []string `json:"groupsAdded,omitempty"  structs:"groupsAdded,omitempty"`
+	GroupsSkipped []string `json:"groupsSkipped,omitempty"  structs:"groupsSkipped,omitempty"`
 	Message       string   `json:"message,omitempty" structs:"message,omitempty"`
 	Status        string   `json:"status,omitempty" structs:"status,omitempty"`
 }
 type AddMembersResponseType struct {
-	UsersAdded   []string `json:"usersAdded,omitempty"  structs:"usersAdded,omitempty`
-	UsersSkipped []string `json:"usersSkipped,omitempty"  structs:"usersSkipped,omitempty`
+	UsersAdded   []string `json:"usersAdded,omitempty"  structs:"usersAdded,omitempty"`
+	UsersSkipped []string `json:"usersSkipped,omitempty"  structs:"usersSkipped,omitempty"`
 	Message      string   `json:"message,omitempty" structs:"message,omitempty"`
 	Status       string   `json:"status,omitempty" structs:"status,omitempty"`
 }
 
 type AddUsersType struct {
-	Users []string `json:"users,omitempty"  structs:"users,omitempty`
+	Users []string `json:"users,omitempty"  structs:"users,omitempty"`
 }
 
 type UsersType struct {
@@ -73,8 +73,8 @@ func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType
 	var payload = new(AddGroupsType)
 	payload.Groups = append(payload.Groups, groupnames...)
 	groups := new(AddGroupsResponseType)
-	res, _ := c.doRequest("POST", u, payload, &groups)
-	fmt.Println("res: " + string(res))
+	c.doRequest("POST", u, payload, &groups)
+	//fmt.Println("res: " + string(res))
 	return groups
 }
 
@@ -84,8 +84,8 @@ func (c *ConfluenceClient) AddGroupMembers(groupname string, members []string) *
 	var payload = new(AddUsersType)
 	payload.Users = append(payload.Users, members...)
 	response := new(AddMembersResponseType)
-	res, _ := c.doRequest("POST", u, payload, &response)
-	fmt.Println("res: " + string(res))
+	c.doRequest("POST", u, payload, &response)
+	//fmt.Println("res: " + string(res))
 	return response
 }
 
@@ -148,7 +148,7 @@ type PaginationOptions struct {
 
 func (c *ConfluenceClient) GetUsers( options *PaginationOptions) *UsersType {
 	var u string
-	if (options == nil) {
+	if options == nil {
 		u = fmt.Sprintf("/rest/extender/1.0/group/getUsers")
 	} else {
 		u = fmt.Sprintf("/rest/extender/1.0/group/getUsers&startAt=%d&maxResults=%d", options.StartAt, options.MaxResults)
@@ -167,7 +167,7 @@ type GetAllGroupsWithAnyPermissionType struct {
 
 func (c *ConfluenceClient) GetAllGroupsWithAnyPermission( spacekey string, options *PaginationOptions) *GetAllGroupsWithAnyPermissionType {
 	var u string
-	if (options == nil) {
+	if options == nil {
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allGroupsWithAnyPermission", spacekey)
 	} else {
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allGroupsWithAnyPermission?startAt=%d&maxResults=%d", spacekey, options.StartAt, options.MaxResults)
@@ -210,7 +210,7 @@ type GetAllUsersWithAnyPermissionType struct {
 
 func (c *ConfluenceClient) GetAllUsersWithAnyPermission( spacekey string, options *PaginationOptions) *GetAllUsersWithAnyPermissionType {
 	var u string
-	if (options == nil) {
+	if options == nil {
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allUsersWithAnyPermission", spacekey)
 	} else {
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allUsersWithAnyPermission?startAt=%d&maxResults=%d", spacekey, options.StartAt, options.MaxResults)
