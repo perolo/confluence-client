@@ -2,6 +2,9 @@ package client
 
 import (
 	"fmt"
+	"github.com/google/go-querystring/query"
+	"net/url"
+	"reflect"
 )
 
 type GroupsType struct {
@@ -58,7 +61,47 @@ func (c *ConfluenceClient) GetGroups() *GroupsType {
 type GetGroupMembersOptions struct {
 	StartAt int `url:"startAt,omitempty"`
 	MaxResults int `url:"maxResults,omitempty"`
+	ShowBasicDetails  bool `url:"showBasicDetails,omitempty"`
 }
+
+// addOptions adds the parameters in opt as URL query parameters to s.  opt
+// must be a struct whose fields may contain "url" tags.
+func addOptions(s string, opt interface{}) (string, error) {
+	v := reflect.ValueOf(opt)
+	if v.Kind() == reflect.Ptr && v.IsNil() {
+		return s, nil
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return s, err
+	}
+
+	qs, err := query.Values(opt)
+	if err != nil {
+		return s, err
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
+}
+
+func (c *ConfluenceClient) GetGroupMembers(groupname string, options *GetGroupMembersOptions) (*UsersType, error) {
+	var err error
+	err = nil
+	apiEndpoint := "/rest/extender/1.0/group/getUsers/" + groupname
+	url :=""
+	if (options != nil) {
+		url, err = addOptions(apiEndpoint, options)
+		if err != nil {
+			return nil,  err
+		}
+	}
+	members := new(UsersType)
+	c.doRequest("GET", url, nil, &members)
+	return members, err
+}
+/*
 func (c *ConfluenceClient) GetGroupMembers(groupname string) *MembersType {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/getUsers/" + groupname)
@@ -66,7 +109,7 @@ func (c *ConfluenceClient) GetGroupMembers(groupname string) *MembersType {
 	c.doRequest("GET", u, nil, &members)
 	return members
 }
-
+*/
 func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/addGroups")
