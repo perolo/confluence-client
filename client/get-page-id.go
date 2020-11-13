@@ -1,15 +1,16 @@
 package client
 
 import (
-	"net/http"
-	"fmt"
-	"os"
 	"bytes"
-	"mime/multipart"
-	"log"
-	"io/ioutil"
-	"io"
 	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"mime/multipart"
+	"net/http"
+	"net/url"
+	"os"
 	"time"
 )
 
@@ -71,10 +72,21 @@ func (c *ConfluenceClient) GetPage(url string) ([]byte,  *http.Response){
 }
 
 func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch, data [] byte, err error) {
-	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
+
+	u := url.URL{
+		Path: fmt.Sprintf("/rest/api/content/%s/child/attachment", id),
+	}
+	uv := url.Values{}
+	if name != "" {
+		uv.Add("filename", name)
+	}
+
+	u.RawQuery = uv.Encode()
+
+//	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
 
 	results = &ConfluenceAttachmnetSearch{}
-	c.doRequest("GET", path, nil, results)
+	c.doRequest("GET", u.String(), nil, results)
 
 	if results.Size == 1 {
 		fmt.Printf("Attachment: %s\n", results.Results[0].Title)
