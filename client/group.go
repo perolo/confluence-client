@@ -8,6 +8,9 @@ import (
 )
 
 type GroupsType struct {
+	Total      int `json:"total"`
+	MaxResults int `json:"maxResults"`
+	StartAt    int `json:"startAt"`
 	Groups  []string `json:"groups,omitempty"  structs:"groups,omitempty"`
 	Message string   `json:"message,omitempty" structs:"message,omitempty"`
 	Status  string   `json:"status,omitempty" structs:"status,omitempty"`
@@ -34,8 +37,14 @@ type AddMembersResponseType struct {
 	Message      string   `json:"message,omitempty" structs:"message,omitempty"`
 	Status       string   `json:"status,omitempty" structs:"status,omitempty"`
 }
+type RemoveMembersResponseType struct {
+	UsersRemoved   []string `json:"usersRemoved,omitempty"  structs:"usersRemoved,omitempty"`
+	UsersSkipped []string `json:"usersSkipped,omitempty"  structs:"usersSkipped,omitempty"`
+	Message      string   `json:"message,omitempty" structs:"message,omitempty"`
+	Status       string   `json:"status,omitempty" structs:"status,omitempty"`
+}
 
-type AddUsersType struct {
+type GroupUsersType struct {
 	Users []string `json:"users,omitempty"  structs:"users,omitempty"`
 }
 
@@ -51,12 +60,22 @@ type UsersType struct {
 	} `json:"users"`
 }
 
-func (c *ConfluenceClient) GetGroups() *GroupsType {
-	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/group/getGroups")
+func (c *ConfluenceClient) GetGroups(options *GetGroupMembersOptions) (*GroupsType, error) {
+	var err error
+	err = nil
+	apiEndpoint := fmt.Sprintf("/rest/extender/1.0/group/getGroups")
+	url :=""
+	if (options != nil) {
+		url, err = addOptions(apiEndpoint, options)
+		if err != nil {
+			return nil,  err
+		}
+	} else {
+		url = apiEndpoint
+	}
 	groups := new(GroupsType)
-	c.doRequest("GET", u, nil, &groups)
-	return groups
+	c.doRequest("GET", url, nil, &groups)
+	return groups, err
 }
 type GetGroupMembersOptions struct {
 	StartAt int `url:"startAt,omitempty"`
@@ -96,6 +115,8 @@ func (c *ConfluenceClient) GetGroupMembers(groupname string, options *GetGroupMe
 		if err != nil {
 			return nil,  err
 		}
+	} else {
+		url = apiEndpoint
 	}
 	members := new(UsersType)
 	c.doRequest("GET", url, nil, &members)
@@ -124,9 +145,20 @@ func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType
 func (c *ConfluenceClient) AddGroupMembers(groupname string, members []string) *AddMembersResponseType {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/addUsers/" + groupname)
-	var payload = new(AddUsersType)
+	var payload = new(GroupUsersType)
 	payload.Users = append(payload.Users, members...)
 	response := new(AddMembersResponseType)
+	c.doRequest("POST", u, payload, &response)
+	//fmt.Println("res: " + string(res))
+	return response
+}
+//{CONFLUENCE_URL}/rest/extender/1.0/group/removeUsers/{GROUP}
+func (c *ConfluenceClient) RemoveGroupMembers(groupname string, members []string) *RemoveMembersResponseType {
+	var u string
+	u = fmt.Sprintf("/rest/extender/1.0/group/removeUsers/" + groupname)
+	var payload = new(GroupUsersType)
+	payload.Users = append(payload.Users, members...)
+	response := new(RemoveMembersResponseType)
 	c.doRequest("POST", u, payload, &response)
 	//fmt.Println("res: " + string(res))
 	return response
