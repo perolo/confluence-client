@@ -46,20 +46,6 @@ type WatchResponseType struct {
 //GetSpaces searches for pages in the space that meet the specified criteria
 func (c *ConfluenceClient) GetSpaces(options *SpaceOptions) (results *ConfluenceSpaceResult) {
 	var req string
-	//var err error
-	/*
-		if options == nil {
-			req = "/rest/api/space"
-		} else {
-			if options.Label == "" {
-				req = fmt.Sprintf("/rest/api/space?start=%d&limit=%d", options.Start, options.Limit)
-			} else {
-				req = fmt.Sprintf("/rest/api/space?start=%d&limit=%d&label=%s", options.Start, options.Limit, options.Label)
-			}
-
-		}
-
-	*/
 	req, _ = addOptions("/rest/api/space", options)
 	results = new(ConfluenceSpaceResult)
 	c.doRequest("GET", req, nil, results)
@@ -88,6 +74,45 @@ func (c *ConfluenceClient) GetWatcher(spaceKey string, user string) (results *Wa
 	req = fmt.Sprintf("/rest/api/user/watch/space/%s?username=%s", spaceKey, user)
 
 	results = new(WatchResponseType)
+	c.doRequest("GET", req, nil, results)
+	return results
+}
+
+///rest/extender/1.0/category/addSpaceCategory/space/{SPACE_KEY}/category/{CATEGORY_NAME}
+func (c *ConfluenceClient) AddSpaceCategory(spaceKey string, category string) http.Response {
+	var req string
+	req = fmt.Sprintf("/rest/extender/1.0/category/addSpaceCategory/space/%s/category/%s", spaceKey, category)
+
+	var res http.Response
+	c.doRequest("PUT", req, nil, &res)
+	return res
+}
+///rest/ui/1.0/space/{SPACE_KEY}/label/{LABEL_ID}
+func (c *ConfluenceClient) RemoveSpaceCategory(spaceKey string, categoryid int) http.Response {
+	var req string
+	req = fmt.Sprintf("/rest/ui/1.0/space/%s/label/%v", spaceKey, categoryid)
+
+	var res http.Response
+	c.doRequest("DELETE", req, nil, &res)
+	return res
+}
+
+type SpaceCategoriesResponseType struct {
+	Name       string `json:"name"`
+	Categories []struct {
+		Name     string `json:"name"`
+		ID       int    `json:"id"`
+		NiceName string `json:"niceName"`
+	} `json:"categories"`
+	Key string `json:"key"`
+}
+
+//{CONFLUENCE_URL}/rest/extender/1.0/category/getSpaceCategories/{SPACE_KEY}
+func (c *ConfluenceClient) GetSpaceCategories(spaceKey string) (results *SpaceCategoriesResponseType) {
+	var req string
+	req = fmt.Sprintf("/rest/extender/1.0/category/getSpaceCategories/%s", spaceKey)
+
+	results = new(SpaceCategoriesResponseType)
 	c.doRequest("GET", req, nil, results)
 	return results
 }
