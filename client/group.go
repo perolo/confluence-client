@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"github.com/google/go-querystring/query"
+	"net/http"
 	"net/url"
 	"reflect"
 )
@@ -283,7 +284,7 @@ type GetAllUsersWithAnyPermissionType struct {
 	StartAt    int      `json:"startAt"`
 }
 
-func (c *ConfluenceClient) GetAllUsersWithAnyPermission( spacekey string, options *PaginationOptions) *GetAllUsersWithAnyPermissionType {
+func (c *ConfluenceClient) GetAllUsersWithAnyPermission( spacekey string, options *PaginationOptions) (*GetAllUsersWithAnyPermissionType, *http.Response) {
 	var u string
 	if options == nil {
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allUsersWithAnyPermission", spacekey)
@@ -291,14 +292,14 @@ func (c *ConfluenceClient) GetAllUsersWithAnyPermission( spacekey string, option
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allUsersWithAnyPermission?startAt=%d&maxResults=%d", spacekey, options.StartAt, options.MaxResults)
 	}
 	users := new(GetAllUsersWithAnyPermissionType)
-	c.doRequest("GET", u, nil, &users)
-	return users
+	_, resp := c.doRequest("GET", u, nil, &users)
+	return users, resp
 }
 
-func (c *ConfluenceClient) GetUserPermissionsForSpace( spacekey, user string ) *GetPermissionsForSpaceType {
+func (c *ConfluenceClient) GetUserPermissionsForSpace( spacekey, user string ) (*GetPermissionsForSpaceType,  *http.Response) {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/permission/user/%s/getPermissionsForSpace/space/%s", user, spacekey)
 	permissions := new(GetPermissionsForSpaceType)
-	c.doRequest("GET", u, nil, &permissions)
-	return permissions
+	_, resp := c.doRequest("GET", u, nil, &permissions)
+	return permissions, resp
 }

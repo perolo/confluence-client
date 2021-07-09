@@ -11,6 +11,7 @@ type SpaceOptions struct {
 	Label  string `url:"label,omitempty"`
 	Type   string `url:"type,omitempty"`
 	Status string `url:"status,omitempty"`
+	SpaceKey string `url:"spaceKey,omitempty"`
 }
 
 type ConfluenceSpaceResult struct {
@@ -44,12 +45,12 @@ type WatchResponseType struct {
 }
 
 //GetSpaces searches for pages in the space that meet the specified criteria
-func (c *ConfluenceClient) GetSpaces(options *SpaceOptions) (results *ConfluenceSpaceResult) {
+func (c *ConfluenceClient) GetSpaces(options *SpaceOptions) (results *ConfluenceSpaceResult, resp *http.Response) {
 	var req string
 	req, _ = addOptions("/rest/api/space", options)
 	results = new(ConfluenceSpaceResult)
-	c.doRequest("GET", req, nil, results)
-	return results
+	_, resp = c.doRequest("GET", req, nil, results)
+	return results, resp
 }
 
 //http://example.com/rest/experimental/space/TST/property?expand=space,version
