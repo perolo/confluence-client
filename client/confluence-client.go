@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -31,13 +32,18 @@ type OperationOptions struct {
 
 //Client returns a new instance of the client
 func Client(config *ConfluenceConfig) *ConfluenceClient {
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
+	}
+
 	return &ConfluenceClient{
 		username: config.Username,
 		password: config.Password,
 		baseURL:  config.URL,
 		debug:    config.Debug,
 		client: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 60 * time.Second, Transport: tr,
 		},
 	}
 }

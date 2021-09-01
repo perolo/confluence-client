@@ -42,6 +42,32 @@ type UserType struct {
 	Expandable     string `json:"_expandable,omitempty"  structs:"_expandable,omitempty`
 }
 
+type UserDetailType struct {
+	Business []struct {
+		Location   string `json:"location"`
+		Position   string `json:"position"`
+		Department string `json:"department"`
+	} `json:"business"`
+	LastFailedLoginDate     int64  `json:"lastFailedLoginDate"`
+	LastSuccessfulLoginDate int64  `json:"lastSuccessfulLoginDate"`
+	FullName                string `json:"fullName"`
+	Personal                []struct {
+		Website string `json:"website"`
+		Im      string `json:"im"`
+		Phone   string `json:"phone"`
+	} `json:"personal"`
+	UpdatedDate                   int64  `json:"updatedDate"`
+	LastFailedLoginDateString     string `json:"lastFailedLoginDateString"`
+	CreatedDate                   int64  `json:"createdDate"`
+	CreatedDateString             string `json:"createdDateString"`
+	HasAccessToUseConfluence      bool   `json:"hasAccessToUseConfluence"`
+	Name                          string `json:"name"`
+	LastSuccessfulLoginDateString string `json:"lastSuccessfulLoginDateString"`
+	Key                           string `json:"key"`
+	Email                         string `json:"email"`
+	UpdatedDateString             string `json:"updatedDateString"`
+}
+
 type UserCreateType struct {
 	UserName     string `json:"name,omitempty"          structs:"name,omitempty"`
 	Password     string `json:"password,omitempty"      structs:"password,omitempty`
@@ -50,6 +76,9 @@ type UserCreateType struct {
 	Notification string `json:"notification,omitempty"  structs:"notification,omitempty`
 }
 
+type MessageType struct {
+	Message string `json:"message"`
+}
 func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 	var u string
 	u = fmt.Sprintf("/rest/api/user?username=" + name)
@@ -61,6 +90,8 @@ func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 
 	return user, res2
 }
+
+
 func (c *ConfluenceClient) CreateUser(newUser UserCreateType) (*http.Response) {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/user/add")
@@ -72,4 +103,27 @@ func (c *ConfluenceClient) CreateUser(newUser UserCreateType) (*http.Response) {
 	fmt.Println("res: " + string(res))
 
 	return res2
+}
+func (c *ConfluenceClient) GetUserDetails(name string) (*UserDetailType, *http.Response) {
+	var u string
+	u = fmt.Sprintf("/rest/extender/1.0/user/getUserDetails/" + name)
+
+	user := new(UserDetailType)
+	_, res2 := c.doRequest("GET", u, nil, &user)
+
+	//	fmt.Println("res: " + string(res))
+
+	return user, res2
+}
+
+func (c *ConfluenceClient) DeactivateUser(name string) (*MessageType, *http.Response) {
+	var u string
+	u = fmt.Sprintf("/rest/extender/1.0/user/deactivate/" + name)
+
+	user := new(MessageType)
+	_, res2 := c.doRequest("POST", u, nil, &user)
+
+	//	fmt.Println("res: " + string(res))
+
+	return user, res2
 }
