@@ -91,7 +91,7 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 	if results.Size == 1 {
 		fmt.Printf("Attachment: %s\n", results.Results[0].Title)
 
-		content, resp := c.GetPage(results.Results[0].Links["download"])
+		content, resp := c.GetPage(results.Results[0].Links["self"])
 
 		if resp.StatusCode == 200 {
 //			fmt.Printf("Content: %s\n", content)
@@ -196,7 +196,11 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 	req.Header.Set("Content-Type", multiPartWriter.FormDataContentType())
 
 	req.Header.Set("X-Atlassian-Token", "nocheck")
-	req.SetBasicAuth(c.username, c.password)
+	if c.usetoken {
+		SetTokenAuth(req, c.password)
+	} else {
+		req.SetBasicAuth(c.username, c.password)
+	}
 
 	// Do the request
 	response, err := c.client.Do(req)
@@ -394,7 +398,11 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	req.Header.Set("Content-Type", multiPartWriter.FormDataContentType())
 
 	req.Header.Set("X-Atlassian-Token", "nocheck")
-	req.SetBasicAuth(c.username, c.password)
+	if c.usetoken {
+		SetTokenAuth(req, c.password)
+	} else {
+		req.SetBasicAuth(c.username, c.password)
+	}
 
 	// Do the request
 	response, err := c.client.Do(req)

@@ -6,4 +6,5 @@ type ConfluenceConfig struct {
 	Password string
 	URL      string
 	Debug    bool
+	UseToken bool
 }
