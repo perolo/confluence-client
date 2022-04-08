@@ -87,6 +87,5 @@ Usage for this Confluence Command Line Interface is as follows:
   --command           The command to run against the site
                       Possible values include:
                       addpage: Add a new page to the service
-                      searchpage: Search for existing pages that match title
-`)
+                      searchpage: Search for existing pages that match title`)
 }
