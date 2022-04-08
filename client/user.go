@@ -103,8 +103,7 @@ func (c *ConfluenceClient) CreateUser(newUser UserCreateType) *http.Response {
 	return res2
 }
 func (c *ConfluenceClient) GetUserDetails(name string) (*UserDetailType, *http.Response) {
-	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/user/getUserDetails/" + name)
+	u := fmt.Sprintf("/rest/extender/1.0/user/getUserDetails/" + name)
 
 	user := new(UserDetailType)
 	_, res2 := c.doRequest("GET", u, nil, &user)
