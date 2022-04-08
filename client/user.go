@@ -81,8 +81,7 @@ type MessageType struct {
 }
 
 func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
-	var u string
-	u = fmt.Sprintf("/rest/api/user?username=" + name)
+	u := fmt.Sprintf("/rest/api/user?username=" + name)
 
 	user := new(UserType)
 	_, res2 := c.doRequest("GET", u, nil, &user)
@@ -93,8 +92,7 @@ func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 }
 
 func (c *ConfluenceClient) CreateUser(newUser UserCreateType) *http.Response {
-	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/user/add")
+	u := "/rest/extender/1.0/user/add"
 
 	//	payload =
 	user := new(UserCreateType)
@@ -117,8 +115,7 @@ func (c *ConfluenceClient) GetUserDetails(name string) (*UserDetailType, *http.R
 }
 
 func (c *ConfluenceClient) DeactivateUser(name string) (*MessageType, *http.Response) {
-	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/user/deactivate/" + name)
+	u := fmt.Sprintf("/rest/extender/1.0/user/deactivate/" + name)
 
 	user := new(MessageType)
 	_, res2 := c.doRequest("POST", u, nil, &user)

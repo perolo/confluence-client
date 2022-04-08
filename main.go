@@ -35,7 +35,7 @@ func runCommand(command string) {
 		validateBasic()
 		validatePageCRUD()
 		client.Client(&config).AddOrUpdatePage(options)
-		
+
 	case "searchpage":
 		validateBasic()
 		result := client.Client(&config).SearchPages(options.Title, options.SpaceKey)

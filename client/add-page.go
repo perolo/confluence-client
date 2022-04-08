@@ -100,7 +100,7 @@ func getBodyFromFile(filepath string, bodyOnly, stripImgs bool) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if bodyOnly == false {
+	if !bodyOnly {
 		return string(buf)
 	}
 	return utility.StripHTML(buf, bodyOnly, stripImgs)

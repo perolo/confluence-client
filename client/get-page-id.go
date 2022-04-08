@@ -361,7 +361,7 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	// Populate other fields
 	fieldWriter, err := multiPartWriter.CreateFormField("minorEdit")
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field ")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field ")
 	}
 
 	_, err = fieldWriter.Write([]byte("true"))
@@ -371,7 +371,7 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	// Populate other fields
 	fieldWriter2, err := multiPartWriter.CreateFormField("comment")
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field ")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field ")
 	}
 
 	_, err = fieldWriter2.Write([]byte(com))
@@ -422,8 +422,8 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	}
 
 	if response.StatusCode < 200 || response.StatusCode > 300 {
-		log.Println("Bad response code received from server: ", response.Status)
-		return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
+		log.Println("bad response code received from server: ", response.Status)
+		return contents, nil, fmt.Errorf("bad response code received from server: %s ", response.Status)
 	} else {
 		err = json.Unmarshal(contents, retType)
 		if err != nil {
