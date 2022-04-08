@@ -13,10 +13,12 @@ pipeline {
             steps {
                 echo 'Installing dependencies'
                 sh 'env'
-                sh 'pwd'
-                sh 'ls -al'
-                sh 'ls -al $GOPATH'
+                sh 'pwd'             
                 sh 'go version'
+                sh 'go install honnef.co/go/tools/cmd/staticcheck@latest'
+                sh 'go install github.com/jstemmer/go-junit-report@latest'
+                sh 'go install github.com/axw/gocov/gocov@latest'
+                sh 'go install github.com/AlekSi/gocov-xml@latest'
             }
         }
         
@@ -32,14 +34,22 @@ pipeline {
                 withEnv(["PATH+GO=${GOPATH}/bin"]){
                     echo 'Running vetting'
                     sh 'go vet .'
-                    //echo 'Running linting'
-                    //sh 'golint .'
-                    //sh 'staticcheck ./...'
+                    //echo 'Running staticcheck'
+                    sh 'staticcheck ./...'
                     echo 'Running test'
-                    sh 'go test -v'
+                    sh 'go test -v 2>&1 | go-junit-report > report.xml'
+                    echo 'Running coverage'
+                    sh 'gocov test ./... | gocov-xml > coverage.xml'
                 }
             }
         }
-        
     }
+    post {
+        always {
+            archiveArtifacts artifacts: 'report.xml', fingerprint: true
+            archiveArtifacts artifacts: 'coverage.xml', fingerprint: true
+            junit 'report.xml'
+            cobertura coberturaReportFile: 'coverage.xml'
+        }
+    }        
 }
