@@ -33,13 +33,13 @@ _expandable	{…}
 */
 
 type UserType struct {
-	Type           string `json:"type,omitempty"  structs:"type,omitempty`
+	Type           string `json:"type,omitempty"  structs:"type,omitempty"`
 	UserName       string `json:"username,omitempty" structs:"username,omitempty"`
 	UserKey        string `json:"userKey,omitempty" structs:"userKey,omitempty"`
-	ProfilePicture string `json:"profilePicture,omitempty"  structs:"profilePicture,omitempty`
-	DisplayName    string `json:"displayName,omitempty"  structs:"displayName,omitempty`
-	Links          string `json:"_links,omitempty"  structs:"_links,omitempty`
-	Expandable     string `json:"_expandable,omitempty"  structs:"_expandable,omitempty`
+	ProfilePicture string `json:"profilePicture,omitempty"  structs:"profilePicture,omitempty"`
+	DisplayName    string `json:"displayName,omitempty"  structs:"displayName,omitempty"`
+	Links          string `json:"_links,omitempty"  structs:"_links,omitempty"`
+	Expandable     string `json:"_expandable,omitempty"  structs:"_expandable,omitempty"`
 }
 
 type UserDetailType struct {
@@ -70,15 +70,16 @@ type UserDetailType struct {
 
 type UserCreateType struct {
 	UserName     string `json:"name,omitempty"          structs:"name,omitempty"`
-	Password     string `json:"password,omitempty"      structs:"password,omitempty`
-	Email        string `json:"email,omitempty"         structs:"email,omitempty`
-	DisplayName  string `json:"fullName,omitempty"      structs:"fullName,omitempty`
-	Notification string `json:"notification,omitempty"  structs:"notification,omitempty`
+	Password     string `json:"password,omitempty"      structs:"password,omitempty"`
+	Email        string `json:"email,omitempty"         structs:"email,omitempty"`
+	DisplayName  string `json:"fullName,omitempty"      structs:"fullName,omitempty"`
+	Notification string `json:"notification,omitempty"  structs:"notification,omitempty"`
 }
 
 type MessageType struct {
 	Message string `json:"message"`
 }
+
 func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 	var u string
 	u = fmt.Sprintf("/rest/api/user?username=" + name)
@@ -86,13 +87,12 @@ func (c *ConfluenceClient) GetUser(name string) (*UserType, *http.Response) {
 	user := new(UserType)
 	_, res2 := c.doRequest("GET", u, nil, &user)
 
-//	fmt.Println("res: " + string(res))
+	//	fmt.Println("res: " + string(res))
 
 	return user, res2
 }
 
-
-func (c *ConfluenceClient) CreateUser(newUser UserCreateType) (*http.Response) {
+func (c *ConfluenceClient) CreateUser(newUser UserCreateType) *http.Response {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/user/add")
 

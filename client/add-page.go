@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-//AddOrUpdatePage checks for an existing page then calls AddPage or UpdatePage depending on the result
+// AddOrUpdatePage checks for an existing page then calls AddPage or UpdatePage depending on the result
 func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 	var retry = 0
 
@@ -29,7 +29,7 @@ func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 				ancestorID = int64(ancestorIDint)
 			}
 		}
-		var res bool = true
+		var res = true
 		if results.Size == 1 {
 			log.Println("Page found, updating page...")
 			item := results.Results[0]
@@ -51,7 +51,7 @@ func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 	return false
 }
 
-//AddPage adds a new page to the space with the given title
+// AddPage adds a new page to the space with the given title
 func (c *ConfluenceClient) AddPage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ancestor int64) {
 	page := newPage(title, spaceKey)
 	if ancestor > 0 {
@@ -65,10 +65,10 @@ func (c *ConfluenceClient) AddPage(title, spaceKey, filepath string, bodyOnly, s
 	//log.Println("ConfluencePage Object Response", response)
 }
 
-//UpdatePage adds a new page to the space with the given title
-func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ID string, version, ancestor int64) bool {
+// UpdatePage adds a new page to the space with the given title
+func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, id string, version, ancestor int64) bool {
 	page := newPage(title, spaceKey)
-	page.ID = ID
+	page.ID = id
 	page.Version = &ConfluencePageVersion{version}
 	if ancestor > 0 {
 		page.Ancestors = []ConfluencePageAncestor{
@@ -77,7 +77,7 @@ func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly
 	}
 	response := &ConfluencePage{}
 	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
-	c.doRequest("PUT", "/rest/api/content/"+ID, page, response)
+	c.doRequest("PUT", "/rest/api/content/"+id, page, response)
 	log.Println("ConfluencePage Object Response", response)
 	if response.Status != "current" {
 		return false

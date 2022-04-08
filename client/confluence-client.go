@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//ConfluenceClient is the primary client to the Confluence API
+// ConfluenceClient is the primary client to the Confluence API
 type ConfluenceClient struct {
 	username string
 	password string
@@ -22,7 +22,7 @@ type ConfluenceClient struct {
 	client   *http.Client
 }
 
-//OperationOptions holds all the options that apply to the specified operation
+// OperationOptions holds all the options that apply to the specified operation
 type OperationOptions struct {
 	Title         string
 	SpaceKey      string
@@ -33,9 +33,8 @@ type OperationOptions struct {
 	AncestorID    int64
 }
 
-//Client returns a new instance of the client
+// Client returns a new instance of the client
 func Client(config *ConfluenceConfig) *ConfluenceClient {
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
 	}
@@ -74,7 +73,10 @@ func formatRequest(r *http.Request) string {
 
 	// If this is a POST, add post data
 	if r.Method == "POST" {
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			log.Fatal(err)
+		}
 		request = append(request, "\n")
 		request = append(request, r.Form.Encode())
 	}
@@ -84,7 +86,10 @@ func formatRequest(r *http.Request) string {
 func (c *ConfluenceClient) doRequest(method, url string, content, responseContainer interface{}) ([]byte, *http.Response) {
 	b := new(bytes.Buffer)
 	if content != nil {
-		json.NewEncoder(b).Encode(content)
+		err := json.NewEncoder(b).Encode(content)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	furl := c.baseURL + url
 	if c.debug {
@@ -109,6 +114,7 @@ func (c *ConfluenceClient) doRequest(method, url string, content, responseContai
 		log.Fatal(err)
 	}
 	defer response.Body.Close()
+
 	if c.debug {
 		log.Println("Response received, processing response...")
 		log.Println("Response status code is", response.StatusCode)
@@ -121,7 +127,10 @@ func (c *ConfluenceClient) doRequest(method, url string, content, responseContai
 	if response.StatusCode < 200 || response.StatusCode > 300 {
 		log.Println("Bad response code received from server: ", response.Status)
 	} else {
-		json.Unmarshal(contents, responseContainer)
+		err := json.Unmarshal(contents, responseContainer)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	return contents, response
 }
@@ -129,7 +138,11 @@ func (c *ConfluenceClient) doRequest(method, url string, content, responseContai
 func (c *ConfluenceClient) doGetPage(method, url string, content interface{}) ([]byte, *http.Response) {
 	b := new(bytes.Buffer)
 	if content != nil {
-		json.NewEncoder(b).Encode(content)
+		err := json.NewEncoder(b).Encode(content)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 	//	furl := c.baseURL + url // How to fix this for Hierarchies report?
 	furl := url
@@ -137,7 +150,10 @@ func (c *ConfluenceClient) doGetPage(method, url string, content interface{}) ([
 		log.Println("Full URL", furl)
 		log.Println("JSON Content:", b.String())
 	}
-	request, err := http.NewRequest(method, furl, b)
+	request, err2 := http.NewRequest(method, furl, b)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
 	request.Header.Set("X-Atlassian-Token", "nocheck")
 	if c.usetoken {
 		SetTokenAuth(request, c.password)

@@ -1,35 +1,35 @@
 package client
 
-//ConfluenceSpace stores the space information
+// ConfluenceSpace stores the space information
 type ConfluenceSpace struct {
 	ID   int64  `json:"id,omitempty"`
 	Key  string `json:"key,omitempty"`
 	Name string `json:"name,omitempty"`
 }
 
-//ConfluencePageBodyStorage holds the storage objects of the body
+// ConfluencePageBodyStorage holds the storage objects of the body
 type ConfluencePageBodyStorage struct {
 	Value          string `json:"value,omitempty"`
 	Representation string `json:"representation,omitempty"`
 }
 
-//ConfluencePageBody holds the page contents itself
+// ConfluencePageBodyView holds the page contents itself
 type ConfluencePageBodyView struct {
 	Value string `json:"value,omitempty"`
 }
 
-//ConfluencePageBody holds the page contents itself
+// ConfluencePageBody holds the page contents itself
 type ConfluencePageBody struct {
 	Storage *ConfluencePageBodyStorage `json:"storage,omitempty"`
 	View    *ConfluencePageBodyView    `json:"view,omitempty"`
 }
 
-//ConfluencePageVersion holds the version information for a page
+// ConfluencePageVersion holds the version information for a page
 type ConfluencePageVersion struct {
 	Number int64 `json:"number,omitempty"`
 }
 
-//ConfluencePageAncestor holds the ID of a specific ancestor to a confluence page
+// ConfluencePageAncestor holds the ID of a specific ancestor to a confluence page
 type ConfluencePageAncestor struct {
 	ID int64 `json:"id,omitempty"`
 }
@@ -77,15 +77,15 @@ type ConfluencePage struct {
 }
 
 type ConfluencePage2 struct {
-	Title     string                   `json:"title,omitempty"`
-	Type      string                   `json:"type,omitempty"`
-	ID        string                   `json:"id,omitempty"`
-	Status    string                   `json:"status,omitempty"`
+	Title     string                    `json:"title,omitempty"`
+	Type      string                    `json:"type,omitempty"`
+	ID        string                    `json:"id,omitempty"`
+	Status    string                    `json:"status,omitempty"`
 	Ancestors []ConfluencePageAncestor2 `json:"ancestors,omitempty"`
-	Space     *ConfluenceSpace         `json:"space,omitempty"`
-	Body      *ConfluencePageBody      `json:"body,omitempty"`
-	Version   *ConfluencePageVersion   `json:"version,omitempty"`
-	MetaData  *Metadata                `json:"metadata,omitempty"`
+	Space     *ConfluenceSpace          `json:"space,omitempty"`
+	Body      *ConfluencePageBody       `json:"body,omitempty"`
+	Version   *ConfluencePageVersion    `json:"version,omitempty"`
+	MetaData  *Metadata                 `json:"metadata,omitempty"`
 }
 
 type Metadata struct {

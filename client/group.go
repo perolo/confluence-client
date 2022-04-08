@@ -49,19 +49,6 @@ type GroupUsersType struct {
 	Users []string `json:"users,omitempty"  structs:"users,omitempty"`
 }
 
-/*
-type UsersType struct {
-	Total      int `json:"total"`
-	MaxResults int `json:"maxResults"`
-	StartAt    int `json:"startAt"`
-	Users      []struct {
-		Name     string `json:"name"`
-		FullName string `json:"fullName"`
-		Key      string `json:"key"`
-		Email    string `json:"email"`
-	} `json:"users"`
-}
-*/
 type UsersType struct {
 	Total      int `json:"total"`
 	MaxResults int `json:"maxResults"`
@@ -97,17 +84,17 @@ func (c *ConfluenceClient) GetGroups(options *GetGroupMembersOptions) (*GroupsTy
 	var err error
 	err = nil
 	apiEndpoint := fmt.Sprintf("/rest/extender/1.0/group/getGroups")
-	url := ""
+	theUrl := ""
 	if options != nil {
-		url, err = addOptions(apiEndpoint, options)
+		theUrl, err = addOptions(apiEndpoint, options)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		url = apiEndpoint
+		theUrl = apiEndpoint
 	}
 	groups := new(GroupsType)
-	c.doRequest("GET", url, nil, &groups)
+	c.doRequest("GET", theUrl, nil, &groups)
 	return groups, err
 }
 
@@ -140,33 +127,24 @@ func addOptions(s string, opt interface{}) (string, error) {
 	return u.String(), nil
 }
 
-func (c *ConfluenceClient) GetGroupMembers(groupname string, options *GetGroupMembersOptions) (*UsersType, error, *http.Response) {
+func (c *ConfluenceClient) GetGroupMembers(groupname string, options *GetGroupMembersOptions) (*UsersType, *http.Response, error) {
 	var err error
 	err = nil
 	apiEndpoint := "/rest/extender/1.0/group/getUsers/" + groupname
-	url := ""
+	theUrl := ""
 	if options != nil {
-		url, err = addOptions(apiEndpoint, options)
+		theUrl, err = addOptions(apiEndpoint, options)
 		if err != nil {
-			return nil, err, nil
+			return nil, nil, err
 		}
 	} else {
-		url = apiEndpoint
+		theUrl = apiEndpoint
 	}
 	members := new(UsersType)
-	_, resp := c.doRequest("GET", url, nil, &members)
-	return members, err, resp
+	_, resp := c.doRequest("GET", theUrl, nil, &members)
+	return members, resp, err
 }
 
-/*
-func (c *ConfluenceClient) GetGroupMembers(groupname string) *MembersType {
-	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/group/getUsers/" + groupname)
-	members := new(MembersType)
-	c.doRequest("GET", u, nil, &members)
-	return members
-}
-*/
 func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/addGroups")
@@ -174,7 +152,7 @@ func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType
 	payload.Groups = append(payload.Groups, groupnames...)
 	groups := new(AddGroupsResponseType)
 	c.doRequest("POST", u, payload, &groups)
-	//fmt.Println("res: " + string(res))
+	// fmt.Println("res: " + string(res))
 	return groups
 }
 
@@ -185,11 +163,11 @@ func (c *ConfluenceClient) AddGroupMembers(groupname string, members []string) *
 	payload.Users = append(payload.Users, members...)
 	response := new(AddMembersResponseType)
 	c.doRequest("POST", u, payload, &response)
-	//fmt.Println("res: " + string(res))
+	// fmt.Println("res: " + string(res))
 	return response
 }
 
-//{CONFLUENCE_URL}/rest/extender/1.0/group/removeUsers/{GROUP}
+// RemoveGroupMembers {CONFLUENCE_URL}/rest/extender/1.0/group/removeUsers/{GROUP}
 func (c *ConfluenceClient) RemoveGroupMembers(groupname string, members []string) *RemoveMembersResponseType {
 	var u string
 	u = fmt.Sprintf("/rest/extender/1.0/group/removeUsers/" + groupname)
@@ -197,7 +175,7 @@ func (c *ConfluenceClient) RemoveGroupMembers(groupname string, members []string
 	payload.Users = append(payload.Users, members...)
 	response := new(RemoveMembersResponseType)
 	c.doRequest("POST", u, payload, &response)
-	//fmt.Println("res: " + string(res))
+	// fmt.Println("res: " + string(res))
 	return response
 }
 
@@ -221,7 +199,7 @@ type GroupOptions struct {
 	Start int
 }
 
-///rest/extender/1.0/permission/group/{GROUP_NAME}/getAllSpacesWithPermissions
+// GetAllSpacesForGroupPermissions /rest/extender/1.0/permission/group/{GROUP_NAME}/getAllSpacesWithPermissions
 func (c *ConfluenceClient) GetAllSpacesForGroupPermissions(groupname string, options *GroupOptions) *SpaceGroupPermissionType {
 	var req string
 	if options == nil {
@@ -240,7 +218,7 @@ type AddResponseType struct {
 	Skipped []interface{} `json:"skipped"`
 }
 
-///rest/extender/1.0/permission/group/{GROUP_NAME}/getAllSpacesWithPermissions
+// AddSpacePermissionsForGroup /rest/extender/1.0/permission/group/{GROUP_NAME}/getAllSpacesWithPermissions
 func (c *ConfluenceClient) AddSpacePermissionsForGroup(spacekey string, groupname string, pp []string) *AddResponseType {
 	req := "/rest/extender/1.0/permission/space/" + spacekey + "/group/" + groupname + "/addSpacePermissions"
 	var perm PermissionsType
@@ -440,7 +418,7 @@ type GetSpacePermissionAllActorsType struct {
 	Key  string `json:"key"`
 }
 
-//rest/extender/1.0/permission/space/DEMO/getSpacePermissionActors/ALL
+// rest/extender/1.0/permission/space/DEMO/getSpacePermissionActors/ALL
 
 func (c *ConfluenceClient) GetSpacePermissionAllActors(space string) (*GetSpacePermissionAllActorsType, *http.Response) {
 	var u string

@@ -23,15 +23,15 @@ type PageOptions struct {
 	Type string `url:"type,omitempty"`
 }
 
-//SearchPages searches for pages in the space that meet the specified criteria
-func (c *ConfluenceClient) GetPageById(id string) (results *ConfluencePage) {
+// GetPageByID SearchPages searches for pages in the space that meet the specified criteria
+func (c *ConfluenceClient) GetPageByID(id string) (results *ConfluencePage) {
 	results = &ConfluencePage{}
 	c.doRequest("GET", "/rest/api/content/"+id+"?expand=body.view", nil, results)
 	return results
 }
 
-//SearchPages searches for pages in the space that meet the specified criteria
-func (c *ConfluenceClient) GetPageByIdAncestor(id string) (results *ConfluencePage2) {
+// GetPageByIDAncestor SearchPages searches for pages in the space that meet the specified criteria
+func (c *ConfluenceClient) GetPageByIDAncestor(id string) (results *ConfluencePage2) {
 	results = &ConfluencePage2{}
 	c.doRequest("GET", "/rest/api/content/"+id+"?expand=ancestors", nil, results)
 	return results
@@ -68,7 +68,7 @@ func (c *ConfluenceClient) GetPage(url string) ([]byte, *http.Response) {
 	return contents, response
 }
 
-func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch, data []byte, err error) {
+func (c *ConfluenceClient) GetPageAttachmentByID(id string, name string) (results *ConfluenceAttachmnetSearch, data []byte, err error) {
 
 	u := url.URL{
 		Path: fmt.Sprintf("/rest/api/content/%s/child/attachment", id),
@@ -94,34 +94,33 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 			//			fmt.Printf("Content: %s\n", content)
 			return results, content, nil
 		} else {
-			return results, nil, fmt.Errorf("Bad response code received from server: %v", resp.Status)
+			return results, nil, fmt.Errorf("bad response code received from server: %v", resp.Status)
 		}
 	}
-	return results, nil, fmt.Errorf("Failed to get attachment: %s", name)
+	return results, nil, fmt.Errorf("failed to get attachment: %s", name)
 }
 
-func (c *ConfluenceClient) GetPageAttachmentById2(id string, name string) (retv *ConfluenceAttachment, data []byte, err error) {
+func (c *ConfluenceClient) GetPageAttachmentByID2(id string, name string) (retv *ConfluenceAttachment, data []byte, err error) {
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, url.QueryEscape(name))
 
 	results := &ConfluenceAttachmnetSearch{}
 	c.doRequest("GET", path, nil, results)
 
 	for _, theRes := range results.Results {
-
 		fmt.Printf("Attachment: %s\n", theRes.Title)
 
 		if theRes.Title == name {
 			content, resp := c.GetPage(theRes.Links["download"])
 
 			if resp.StatusCode == 200 {
-				//fmt.Printf("Content: %s\n", content)
+				// fmt.Printf("Content: %s\n", content)
 				return &theRes, content, nil
 			} else {
-				return &theRes, nil, fmt.Errorf("Bad response code received from server: %v", resp.Status)
+				return &theRes, nil, fmt.Errorf("bad response code received from server: %v", resp.Status)
 			}
 		}
 	}
-	return nil, nil, fmt.Errorf("Failed to get attachment: %s", name)
+	return nil, nil, fmt.Errorf("failed to get attachment: %s", name)
 }
 
 func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAttachment, err error) {
@@ -131,7 +130,7 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 	// Open the file
 	file, err := os.Open(newFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to open file %s", newFilePath)
+		return nil, nil, fmt.Errorf("confluence client: Failed to open file %s", newFilePath)
 	}
 	// Close the file later
 	defer file.Close()
@@ -145,39 +144,42 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 	// Initialize the file field
 	fileWriter, err := multiPartWriter.CreateFormFile("file", attName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form file")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form file")
 	}
 
-	// Copy the actual file content to the field field's writer
+	// Copy the actual file content to the field's writer
 	_, err = io.Copy(fileWriter, file)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to copy file %s", newFilePath)
+		return nil, nil, fmt.Errorf("confluence client: Failed to copy file %s", newFilePath)
 	}
 
 	// Populate other fields
 	fieldWriter, err := multiPartWriter.CreateFormField("minorEdit")
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field ")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field ")
 	}
 
 	_, err = fieldWriter.Write([]byte("true"))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field value")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field value")
 	}
 	// Populate other fields
 	fieldWriter2, err := multiPartWriter.CreateFormField("comment")
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field ")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field ")
 	}
 
 	_, err = fieldWriter2.Write([]byte(com))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field value")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field value")
 	}
 
 	// We completed adding the file and the fields, let's close the multipart writer
 	// So it writes the ending boundary
-	multiPartWriter.Close()
+	err = multiPartWriter.Close()
+	if err != nil {
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field value")
+	}
 
 	// By now our original request body should have been populated, so let's just use it with our custom request
 	req, err := http.NewRequest("POST", c.baseURL+path, &requestBody)
@@ -186,7 +188,7 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 		return nil, nil, err
 	}
 
-	//fmt.Println(requestBody.String())
+	// fmt.Println(requestBody.String())
 
 	// We need to set the content type from the writer, it includes necessary boundary as well
 	req.Header.Set("Content-Type", multiPartWriter.FormDataContentType())
@@ -218,7 +220,10 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 		log.Println("Bad response code received from server: ", response.Status)
 		return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
 	} else {
-		json.Unmarshal(contents, retType)
+		err = json.Unmarshal(contents, retType)
+		if err != nil {
+			return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
+		}
 	}
 	return contents, retType, nil
 }
@@ -333,7 +338,7 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	// Open the file
 	file, err := os.Open(newFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to open file %s", newFilePath)
+		return nil, nil, fmt.Errorf("confluence client: Failed to open file %s", newFilePath)
 	}
 	// Close the file later
 	defer file.Close()
@@ -347,13 +352,13 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	// Initialize the file field
 	fileWriter, err := multiPartWriter.CreateFormFile("file", attName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form file")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form file")
 	}
 
-	// Copy the actual file content to the field field's writer
+	// Copy the actual file content to the field's writer
 	_, err = io.Copy(fileWriter, file)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to copy file %s", newFilePath)
+		return nil, nil, fmt.Errorf("confluence client: Failed to copy file %s", newFilePath)
 	}
 
 	// Populate other fields
@@ -364,7 +369,7 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 
 	_, err = fieldWriter.Write([]byte("true"))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field value")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field value")
 	}
 	// Populate other fields
 	fieldWriter2, err := multiPartWriter.CreateFormField("comment")
@@ -374,12 +379,15 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 
 	_, err = fieldWriter2.Write([]byte(com))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Confluence client: Failed to create Form field value")
+		return nil, nil, fmt.Errorf("confluence client: Failed to create Form field value")
 	}
 
 	// We completed adding the file and the fields, let's close the multipart writer
 	// So it writes the ending boundary
-	multiPartWriter.Close()
+	err = multiPartWriter.Close()
+	if err != nil {
+		return nil, nil, err
+	}
 
 	// By now our original request body should have been populated, so let's just use it with our custom request
 	req, err := http.NewRequest("POST", c.baseURL+path, &requestBody)
@@ -420,7 +428,11 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 		log.Println("Bad response code received from server: ", response.Status)
 		return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
 	} else {
-		json.Unmarshal(contents, retType)
+		err = json.Unmarshal(contents, retType)
+		if err != nil {
+			return nil, nil, err
+		}
+
 	}
 	return contents, retType, nil
 }

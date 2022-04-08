@@ -25,7 +25,7 @@ func getBody(doc *html.Node) (*html.Node, error) {
 	if b != nil {
 		return b, nil
 	}
-	return nil, errors.New("Missing <body> in the node tree")
+	return nil, errors.New("missing <body> in the node tree")
 }
 
 func stripImgs(doc *html.Node) (*html.Node, error) {
@@ -46,11 +46,14 @@ func stripImgs(doc *html.Node) (*html.Node, error) {
 func renderNode(n *html.Node) string {
 	var buf bytes.Buffer
 	w := io.Writer(&buf)
-	html.Render(w, n)
+	err := html.Render(w, n)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return buf.String()
 }
 
-//StripHTML removes the specified information from the HTML and sets it as a string
+// StripHTML removes the specified information from the HTML and sets it as a string
 func StripHTML(buf []byte, bodyOnly, stripImg bool) string {
 	doc, err := html.Parse(bytes.NewReader(buf))
 	if err != nil {
