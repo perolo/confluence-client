@@ -23,8 +23,6 @@ type PageOptions struct {
 	Type string `url:"type,omitempty"`
 }
 
-
-
 //SearchPages searches for pages in the space that meet the specified criteria
 func (c *ConfluenceClient) GetPageById(id string) (results *ConfluencePage) {
 	results = &ConfluencePage{}
@@ -65,13 +63,12 @@ func (c *ConfluenceClient) GetContent(content string, options *PageOptions) (res
 	return results
 }
 
-
-func (c *ConfluenceClient) GetPage(url string) ([]byte,  *http.Response){
+func (c *ConfluenceClient) GetPage(url string) ([]byte, *http.Response) {
 	contents, response := c.doGetPage("GET", url, nil)
 	return contents, response
 }
 
-func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch, data [] byte, err error) {
+func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (results *ConfluenceAttachmnetSearch, data []byte, err error) {
 
 	u := url.URL{
 		Path: fmt.Sprintf("/rest/api/content/%s/child/attachment", id),
@@ -83,7 +80,7 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 
 	u.RawQuery = uv.Encode()
 
-//	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
+	//	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
 
 	results = &ConfluenceAttachmnetSearch{}
 	c.doRequest("GET", u.String(), nil, results)
@@ -94,7 +91,7 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 		content, resp := c.GetPage(results.Results[0].Links["self"])
 
 		if resp.StatusCode == 200 {
-//			fmt.Printf("Content: %s\n", content)
+			//			fmt.Printf("Content: %s\n", content)
 			return results, content, nil
 		} else {
 			return results, nil, fmt.Errorf("Bad response code received from server: %v", resp.Status)
@@ -103,8 +100,8 @@ func (c *ConfluenceClient) GetPageAttachmentById(id string, name string) (result
 	return results, nil, fmt.Errorf("Failed to get attachment: %s", name)
 }
 
-func (c *ConfluenceClient) GetPageAttachmentById2(id string, name string) ( retv *ConfluenceAttachment, data [] byte, err error) {
-	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
+func (c *ConfluenceClient) GetPageAttachmentById2(id string, name string) (retv *ConfluenceAttachment, data []byte, err error) {
+	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, url.QueryEscape(name))
 
 	results := &ConfluenceAttachmnetSearch{}
 	c.doRequest("GET", path, nil, results)
@@ -127,10 +124,9 @@ func (c *ConfluenceClient) GetPageAttachmentById2(id string, name string) ( retv
 	return nil, nil, fmt.Errorf("Failed to get attachment: %s", name)
 }
 
+func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAttachment, err error) {
 
-func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAttachment, err error){
-
-	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id,attid)
+	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id, attid)
 
 	// Open the file
 	file, err := os.Open(newFilePath)
@@ -184,7 +180,7 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 	multiPartWriter.Close()
 
 	// By now our original request body should have been populated, so let's just use it with our custom request
-	req, err := http.NewRequest("POST", c.baseURL+ path, &requestBody)
+	req, err := http.NewRequest("POST", c.baseURL+path, &requestBody)
 
 	if err != nil {
 		return nil, nil, err
@@ -330,7 +326,7 @@ type ConfluenceAddAttachment struct {
 	} `json:"_links"`
 }
 
-func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAddAttachment, err error){
+func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAddAttachment, err error) {
 
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment", id)
 
@@ -386,7 +382,7 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 	multiPartWriter.Close()
 
 	// By now our original request body should have been populated, so let's just use it with our custom request
-	req, err := http.NewRequest("POST", c.baseURL+ path, &requestBody)
+	req, err := http.NewRequest("POST", c.baseURL+path, &requestBody)
 
 	if err != nil {
 		return nil, nil, err

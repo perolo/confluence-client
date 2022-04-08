@@ -81,7 +81,7 @@ func formatRequest(r *http.Request) string {
 	// Return the request as a string
 	return strings.Join(request, "\n")
 }
-func (c *ConfluenceClient) doRequest(method, url string, content, responseContainer interface{}) ([]byte,  *http.Response){
+func (c *ConfluenceClient) doRequest(method, url string, content, responseContainer interface{}) ([]byte, *http.Response) {
 	b := new(bytes.Buffer)
 	if content != nil {
 		json.NewEncoder(b).Encode(content)
@@ -126,13 +126,13 @@ func (c *ConfluenceClient) doRequest(method, url string, content, responseContai
 	return contents, response
 }
 
-
-func (c *ConfluenceClient) doGetPage(method, url string, content interface{}) ([]byte,  *http.Response){
+func (c *ConfluenceClient) doGetPage(method, url string, content interface{}) ([]byte, *http.Response) {
 	b := new(bytes.Buffer)
 	if content != nil {
 		json.NewEncoder(b).Encode(content)
 	}
-	furl :=  url
+	//	furl := c.baseURL + url // How to fix this for Hierarchies report?
+	furl := url
 	if c.debug {
 		log.Println("Full URL", furl)
 		log.Println("JSON Content:", b.String())

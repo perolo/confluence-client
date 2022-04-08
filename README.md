@@ -1,4 +1,4 @@
-# confluence-prop
+# confluence-client
 Command line utility to access Confluence REST API
 
 Forked from github.com/philproctor/confluence-cli

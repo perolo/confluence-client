@@ -5,13 +5,13 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/perolo/confluence-prop/utility"
+	"github.com/perolo/confluence-client/utility"
 	"net/http"
 )
 
 //AddOrUpdatePage checks for an existing page then calls AddPage or UpdatePage depending on the result
 func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
-	var retry = 0;
+	var retry = 0
 
 	for retry < 3 {
 		results := c.SearchPages(options.Title, options.SpaceKey)
@@ -34,7 +34,7 @@ func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 			log.Println("Page found, updating page...")
 			item := results.Results[0]
 			res = c.UpdatePage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, item.ID, item.Version.Number+1, ancestorID)
-		} else if results.Size == 0{
+		} else if results.Size == 0 {
 			log.Println("Page not found, adding page...")
 			c.AddPage(options.Title, options.SpaceKey, options.Filepath, options.BodyOnly, options.StripImgs, ancestorID)
 		} else {
@@ -42,7 +42,7 @@ func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 			res = false
 		}
 
-		if res==true {
+		if res == true {
 			return res
 		} else {
 			retry++
@@ -86,7 +86,7 @@ func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly
 
 }
 
-func (c *ConfluenceClient) DeletePage( title string, spaceKey string) (bool) {
+func (c *ConfluenceClient) DeletePage(title string, spaceKey string) bool {
 	results := c.SearchPages(title, spaceKey)
 	if results.Size == 1 {
 		log.Println("Page found, Deleting page...")
