@@ -67,9 +67,7 @@ func (c *ConfluenceClient) GetPage(url string) ([]byte, *http.Response) {
 	contents, response := c.doGetPage("GET", url, nil)
 	return contents, response
 }
-
 func (c *ConfluenceClient) GetPageAttachmentByID(id string, name string) (results *ConfluenceAttachmnetSearch, data []byte, err error) {
-
 	u := url.URL{
 		Path: fmt.Sprintf("/rest/api/content/%s/child/attachment", id),
 	}
@@ -124,7 +122,6 @@ func (c *ConfluenceClient) GetPageAttachmentByID2(id string, name string) (retv 
 }
 
 func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName string, newFilePath string, com string) (contents []byte, retType *ConfluenceAttachment, err error) {
-
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment/%s/data", id, attid)
 
 	// Open the file
@@ -218,11 +215,11 @@ func (c *ConfluenceClient) UpdateAttachment(id string, attid string, attName str
 
 	if response.StatusCode < 200 || response.StatusCode > 300 {
 		log.Println("Bad response code received from server: ", response.Status)
-		return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
+		return contents, nil, fmt.Errorf("bad response code received from server: %s ", response.Status)
 	} else {
 		err = json.Unmarshal(contents, retType)
 		if err != nil {
-			return contents, nil, fmt.Errorf("Bad response code received from server: %s ", response.Status)
+			return contents, nil, fmt.Errorf("bad response code received from server: %s ", response.Status)
 		}
 	}
 	return contents, retType, nil
@@ -396,7 +393,7 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 		return nil, nil, err
 	}
 
-	//fmt.Println(requestBody.String())
+	// fmt.Println(requestBody.String())
 
 	// We need to set the content type from the writer, it includes necessary boundary as well
 	req.Header.Set("Content-Type", multiPartWriter.FormDataContentType())
@@ -432,7 +429,6 @@ func (c *ConfluenceClient) AddAttachment(id string, attName string, newFilePath 
 		if err != nil {
 			return nil, nil, err
 		}
-
 	}
 	return contents, retType, nil
 }

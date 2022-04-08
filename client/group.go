@@ -83,18 +83,18 @@ type UsersType struct {
 func (c *ConfluenceClient) GetGroups(options *GetGroupMembersOptions) (*GroupsType, error) {
 	var err error
 	err = nil
-	apiEndpoint := fmt.Sprintf("/rest/extender/1.0/group/getGroups")
-	theUrl := ""
+	apiEndpoint := "/rest/extender/1.0/group/getGroups"
+	theURL := ""
 	if options != nil {
-		theUrl, err = addOptions(apiEndpoint, options)
+		theURL, err = addOptions(apiEndpoint, options)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		theUrl = apiEndpoint
+		theURL = apiEndpoint
 	}
 	groups := new(GroupsType)
-	c.doRequest("GET", theUrl, nil, &groups)
+	c.doRequest("GET", theURL, nil, &groups)
 	return groups, err
 }
 
@@ -131,23 +131,23 @@ func (c *ConfluenceClient) GetGroupMembers(groupname string, options *GetGroupMe
 	var err error
 	err = nil
 	apiEndpoint := "/rest/extender/1.0/group/getUsers/" + groupname
-	theUrl := ""
+	theURL := ""
 	if options != nil {
-		theUrl, err = addOptions(apiEndpoint, options)
+		theURL, err = addOptions(apiEndpoint, options)
 		if err != nil {
 			return nil, nil, err
 		}
 	} else {
-		theUrl = apiEndpoint
+		theURL = apiEndpoint
 	}
 	members := new(UsersType)
-	_, resp := c.doRequest("GET", theUrl, nil, &members)
+	_, resp := c.doRequest("GET", theURL, nil, &members)
 	return members, resp, err
 }
 
 func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType {
 	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/group/addGroups")
+	u = "/rest/extender/1.0/group/addGroups"
 	var payload = new(AddGroupsType)
 	payload.Groups = append(payload.Groups, groupnames...)
 	groups := new(AddGroupsResponseType)
@@ -239,7 +239,7 @@ type PaginationOptions struct {
 func (c *ConfluenceClient) GetUsers(options *PaginationOptions) *UsersType {
 	var u string
 	if options == nil {
-		u = fmt.Sprintf("/rest/extender/1.0/group/getUsers")
+		u = "/rest/extender/1.0/group/getUsers"
 	} else {
 		u = fmt.Sprintf("/rest/extender/1.0/group/getUsers&startAt=%d&maxResults=%d", options.StartAt, options.MaxResults)
 	}
@@ -285,7 +285,7 @@ type PermissionsTypes []string
 
 func (c *ConfluenceClient) GetPermissionTypes() *PermissionsTypes {
 	var u string
-	u = fmt.Sprintf("/rest/extender/1.0/permission/space/permissionTypes")
+	u = "/rest/extender/1.0/permission/space/permissionTypes"
 	types := new(PermissionsTypes)
 	c.doRequest("GET", u, nil, &types)
 	return types

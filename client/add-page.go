@@ -42,7 +42,7 @@ func (c *ConfluenceClient) AddOrUpdatePage(options OperationOptions) bool {
 			res = false
 		}
 
-		if res == true {
+		if res {
 			return res
 		} else {
 			retry++
@@ -79,11 +79,7 @@ func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly
 	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
 	c.doRequest("PUT", "/rest/api/content/"+id, page, response)
 	log.Println("ConfluencePage Object Response", response)
-	if response.Status != "current" {
-		return false
-	}
-	return true
-
+	return response.Status == "current"
 }
 
 func (c *ConfluenceClient) DeletePage(title string, spaceKey string) bool {
