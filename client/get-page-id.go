@@ -64,7 +64,7 @@ func (c *ConfluenceClient) GetContent(content string, options *PageOptions) (res
 }
 
 func (c *ConfluenceClient) GetPage(url string) ([]byte, *http.Response) {
-	contents, response := c.doGetPage("GET", url, nil)
+	contents, response := c.DoGetPage("GET", url, nil)
 	return contents, response
 }
 func (c *ConfluenceClient) GetPageAttachmentByID(id string, name string) (results *ConfluenceAttachmnetSearch, data []byte, err error) {
