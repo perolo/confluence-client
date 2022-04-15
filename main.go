@@ -3,16 +3,53 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-
+	"github.com/ChimeraCoder/gojson"
 	"github.com/perolo/confluence-client/client"
+	"io/ioutil"
+	"log"
+	"strings"
 )
+
+//"rogchap.com/v8go"
 
 var config = client.ConfluenceConfig{}
 
 var options = client.OperationOptions{}
 
+func UpdateTests() {
+
+	config = client.ConfluenceConfig{}
+	config.Username = "admin"
+	config.Password = "admin"
+	config.UseToken = false
+	config.URL = "http://localhost:1990/confluence"
+	config.Debug = true
+
+	theClient := client.Client(&config)
+
+	for _, ctest := range client.ConfluenceTest {
+		cont, resp := theClient.DoGetPage(ctest.Method, ctest.APIEndpoint, nil)
+		if resp.StatusCode == 200 {
+			err := ioutil.WriteFile(ctest.File, cont, 0644)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			i := strings.NewReader(string(cont))
+			res, err2 := gojson.Generate(i, gojson.ParseJson, ctest.Type, "client", []string{"json"}, false, true)
+			if err2 != nil {
+				log.Fatal(err2.Error())
+			}
+			err = ioutil.WriteFile(ctest.TypeFile, res, 0644)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		}
+
+	}
+}
 func main() {
+	UpdateTests()
+
 	flag.StringVar(&config.Username, "u", "", "Confluence username")
 	flag.StringVar(&config.Password, "p", "", "Confluence password")
 	flag.StringVar(&config.URL, "s", "", "The base URL of the Confluence page")

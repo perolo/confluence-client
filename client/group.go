@@ -94,7 +94,9 @@ func (c *ConfluenceClient) GetGroups(options *GetGroupMembersOptions) (*GroupsTy
 		theURL = apiEndpoint
 	}
 	groups := new(GroupsType)
-	c.doRequest("GET", theURL, nil, &groups)
+	_, resp := c.doRequest("GET", theURL, nil, &groups) //nolint:bodyclose
+	defer CleanupH(resp)
+
 	return groups, err
 }
 
@@ -142,6 +144,8 @@ func (c *ConfluenceClient) GetGroupMembers(groupname string, options *GetGroupMe
 	}
 	members := new(UsersType)
 	_, resp := c.doRequest("GET", theURL, nil, &members)
+	defer CleanupH(resp)
+
 	return members, resp, err
 }
 
@@ -150,7 +154,8 @@ func (c *ConfluenceClient) AddGroups(groupnames []string) *AddGroupsResponseType
 	var payload = new(AddGroupsType)
 	payload.Groups = append(payload.Groups, groupnames...)
 	groups := new(AddGroupsResponseType)
-	c.doRequest("POST", u, payload, &groups)
+	_, resp := c.doRequest("POST", u, payload, &groups) //nolint:bodyclose
+	defer CleanupH(resp)
 	// fmt.Println("res: " + string(res))
 	return groups
 }
@@ -160,7 +165,8 @@ func (c *ConfluenceClient) AddGroupMembers(groupname string, members []string) *
 	var payload = new(GroupUsersType)
 	payload.Users = append(payload.Users, members...)
 	response := new(AddMembersResponseType)
-	c.doRequest("POST", u, payload, &response)
+	_, resp := c.doRequest("POST", u, payload, &response) //nolint:bodyclose
+	defer CleanupH(resp)
 	// fmt.Println("res: " + string(res))
 	return response
 }
@@ -171,7 +177,8 @@ func (c *ConfluenceClient) RemoveGroupMembers(groupname string, members []string
 	var payload = new(GroupUsersType)
 	payload.Users = append(payload.Users, members...)
 	response := new(RemoveMembersResponseType)
-	c.doRequest("POST", u, payload, &response)
+	_, resp := c.doRequest("POST", u, payload, &response) //nolint:bodyclose
+	defer CleanupH(resp)
 	// fmt.Println("res: " + string(res))
 	return response
 }
@@ -205,7 +212,9 @@ func (c *ConfluenceClient) GetAllSpacesForGroupPermissions(groupname string, opt
 		req = fmt.Sprintf("/rest/extender/1.0/permission/group/%s/getAllSpacesWithPermissions?spacesAsArray=true&startAt=%d&maxResults=%d", groupname, options.Start, options.Limit)
 	}
 	spaces := new(SpaceGroupPermissionType)
-	c.doRequest("GET", req, nil, &spaces)
+	_, resp := c.doRequest("GET", req, nil, &spaces) //nolint:bodyclose
+	defer CleanupH(resp)
+
 	return spaces
 }
 
@@ -221,7 +230,8 @@ func (c *ConfluenceClient) AddSpacePermissionsForGroup(spacekey string, groupnam
 	var perm PermissionsType
 	perm.Permissions = pp
 	resp := new(AddResponseType)
-	c.doRequest("PUT", req, perm, &resp)
+	_, resp2 := c.doRequest("PUT", req, perm, &resp) //nolint:bodyclose
+	defer CleanupH(resp2)
 	return resp
 }
 
@@ -241,7 +251,8 @@ func (c *ConfluenceClient) GetUsers(options *PaginationOptions) *UsersType {
 		u = fmt.Sprintf("/rest/extender/1.0/group/getUsers&startAt=%d&maxResults=%d", options.StartAt, options.MaxResults)
 	}
 	users := new(UsersType)
-	c.doRequest("GET", u, nil, &users)
+	_, resp := c.doRequest("GET", u, nil, &users) //nolint:bodyclose
+	defer CleanupH(resp)
 	return users
 }
 
@@ -260,7 +271,8 @@ func (c *ConfluenceClient) GetAllGroupsWithAnyPermission(spacekey string, option
 		u = fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allGroupsWithAnyPermission?startAt=%d&maxResults=%d", spacekey, options.StartAt, options.MaxResults)
 	}
 	groups := new(GetAllGroupsWithAnyPermissionType)
-	c.doRequest("GET", u, nil, &groups)
+	_, resp := c.doRequest("GET", u, nil, &groups) //nolint:bodyclose
+	defer CleanupH(resp)
 	return groups
 }
 
@@ -273,7 +285,8 @@ type GetPermissionsForSpaceType struct {
 func (c *ConfluenceClient) GetGroupPermissionsForSpace(spacekey, group string) *GetPermissionsForSpaceType {
 	u := fmt.Sprintf("/rest/extender/1.0/permission/group/%s/getPermissionsForSpace/space/%s", group, spacekey)
 	permissions := new(GetPermissionsForSpaceType)
-	c.doRequest("GET", u, nil, &permissions)
+	_, resp := c.doRequest("GET", u, nil, &permissions) //nolint:bodyclose
+	defer CleanupH(resp)
 	return permissions
 }
 
@@ -282,7 +295,8 @@ type PermissionsTypes []string
 func (c *ConfluenceClient) GetPermissionTypes() *PermissionsTypes {
 	u := "/rest/extender/1.0/permission/space/permissionTypes"
 	types := new(PermissionsTypes)
-	c.doRequest("GET", u, nil, &types)
+	_, resp := c.doRequest("GET", u, nil, &types) //nolint:bodyclose
+	defer CleanupH(resp)
 	return types
 }
 
@@ -302,6 +316,7 @@ func (c *ConfluenceClient) GetAllUsersWithAnyPermission(spacekey string, options
 	}
 	users := new(GetAllUsersWithAnyPermissionType)
 	_, resp := c.doRequest("GET", u, nil, &users)
+	defer CleanupH(resp)
 	return users, resp
 }
 
@@ -309,6 +324,7 @@ func (c *ConfluenceClient) GetUserPermissionsForSpace(spacekey, user string) (*G
 	u := fmt.Sprintf("/rest/extender/1.0/permission/user/%s/getPermissionsForSpace/space/%s", user, spacekey)
 	permissions := new(GetPermissionsForSpaceType)
 	_, resp := c.doRequest("GET", u, nil, &permissions)
+	defer CleanupH(resp)
 	return permissions, resp
 }
 
@@ -332,6 +348,7 @@ func (c *ConfluenceClient) GetAllSpacesWithPermissions(user string, options *Get
 	}
 	users := new(GetAllSpacesWithPermissionsType)
 	_, resp := c.doRequest("GET", u, nil, &users)
+	defer CleanupH(resp)
 	return users, resp
 }
 

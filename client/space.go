@@ -14,6 +14,7 @@ type SpaceOptions struct {
 	SpaceKey string `url:"spaceKey,omitempty"`
 }
 
+/*
 type ConfluenceSpaceResult struct {
 	Results []SpaceType `json:"results,omitempty" structs:"results,omitempty"`
 	Start   int         `json:"start,omitempty" structs:"start,omitempty"`
@@ -29,7 +30,7 @@ type SpaceType struct {
 	Start      string            `json:"start,omitempty" structs:"start,omitempty"`
 	Expandable map[string]string `json:"_expandable,omitempty" structs:"_expandable,omitempty"`
 }
-
+*/
 type ConfluenceSpacePropertyResult struct {
 	Results []string `json:"results,omitempty" structs:"results,omitempty"`
 	Start   int      `json:"start,omitempty" structs:"start,omitempty"`
@@ -50,6 +51,7 @@ func (c *ConfluenceClient) GetSpaces(options *SpaceOptions) (results *Confluence
 	req, _ = addOptions("/rest/api/space", options)
 	results = new(ConfluenceSpaceResult)
 	_, resp = c.doRequest("GET", req, nil, results)
+	defer CleanupH(resp)
 	return results, resp
 }
 
@@ -57,7 +59,8 @@ func (c *ConfluenceClient) GetSpaces(options *SpaceOptions) (results *Confluence
 func (c *ConfluenceClient) GetSpaceProperties(spacekey string) (results *ConfluenceSpacePropertyResult) {
 	req := fmt.Sprintf("/rest/api/space/%s/property?expand=space,version", spacekey)
 	results = new(ConfluenceSpacePropertyResult)
-	c.doRequest("GET", req, nil, results)
+	_, resp := c.doRequest("GET", req, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }
 
@@ -65,14 +68,16 @@ func (c *ConfluenceClient) AddWatcher(spaceKey string, user string) {
 	req := fmt.Sprintf("/rest/api/user/watch/space/%s?username=%s", spaceKey, user)
 
 	var res *http.Response
-	c.doRequest("POST", req, nil, res)
+	_, resp := c.doRequest("POST", req, nil, res) //nolint:bodyclose
+	defer CleanupH(resp)
 }
 
 func (c *ConfluenceClient) GetWatcher(spaceKey string, user string) (results *WatchResponseType) {
 	req := fmt.Sprintf("/rest/api/user/watch/space/%s?username=%s", spaceKey, user)
 
 	results = new(WatchResponseType)
-	c.doRequest("GET", req, nil, results)
+	_, resp := c.doRequest("GET", req, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }
 
@@ -81,7 +86,8 @@ func (c *ConfluenceClient) AddSpaceCategory(spaceKey string, category string) ht
 	req := fmt.Sprintf("/rest/extender/1.0/category/addSpaceCategory/space/%s/category/%s", spaceKey, category)
 
 	var res http.Response
-	c.doRequest("PUT", req, nil, &res)
+	_, resp := c.doRequest("PUT", req, nil, &res) //nolint:bodyclose
+	defer CleanupH(resp)
 	return res
 }
 
@@ -90,7 +96,8 @@ func (c *ConfluenceClient) RemoveSpaceCategory(spaceKey string, categoryid int) 
 	req := fmt.Sprintf("/rest/ui/1.0/space/%s/label/%v", spaceKey, categoryid)
 
 	var res http.Response
-	c.doRequest("DELETE", req, nil, &res)
+	_, resp := c.doRequest("DELETE", req, nil, &res) //nolint:bodyclose
+	defer CleanupH(resp)
 	return res
 }
 
@@ -109,6 +116,7 @@ func (c *ConfluenceClient) GetSpaceCategories(spaceKey string) (results *SpaceCa
 	req := fmt.Sprintf("/rest/extender/1.0/category/getSpaceCategories/%s", spaceKey)
 
 	results = new(SpaceCategoriesResponseType)
-	c.doRequest("GET", req, nil, results)
+	_, resp := c.doRequest("GET", req, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }

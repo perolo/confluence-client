@@ -26,14 +26,16 @@ type PageOptions struct {
 // GetPageByID SearchPages searches for pages in the space that meet the specified criteria
 func (c *ConfluenceClient) GetPageByID(id string) (results *ConfluencePage) {
 	results = &ConfluencePage{}
-	c.doRequest("GET", "/rest/api/content/"+id+"?expand=body.view", nil, results)
+	_, resp := c.doRequest("GET", "/rest/api/content/"+id+"?expand=body.view", nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }
 
 // GetPageByIDAncestor SearchPages searches for pages in the space that meet the specified criteria
 func (c *ConfluenceClient) GetPageByIDAncestor(id string) (results *ConfluencePage2) {
 	results = &ConfluencePage2{}
-	c.doRequest("GET", "/rest/api/content/"+id+"?expand=ancestors", nil, results)
+	_, resp := c.doRequest("GET", "/rest/api/content/"+id+"?expand=ancestors", nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }
 
@@ -46,7 +48,8 @@ func (c *ConfluenceClient) GetPages(space string, options *PageOptions) (results
 	}
 
 	results = &ConfluencePages{}
-	c.doRequest("GET", path, nil, results)
+	_, resp := c.doRequest("GET", path, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }
 
@@ -59,7 +62,8 @@ func (c *ConfluenceClient) GetContent(content string, options *PageOptions) (res
 	}
 
 	results = &ConfluencePageSearch{}
-	c.doRequest("GET", path, nil, results)
+	_, resp := c.doRequest("GET", path, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }
 
@@ -81,14 +85,16 @@ func (c *ConfluenceClient) GetPageAttachmentByID(id string, name string) (result
 	//	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, name)
 
 	results = &ConfluenceAttachmnetSearch{}
-	c.doRequest("GET", u.String(), nil, results)
+	_, resp := c.doRequest("GET", u.String(), nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 
 	if results.Size == 1 {
 		fmt.Printf("Attachment: %s\n", results.Results[0].Title)
 
-		content, resp := c.GetPage(results.Results[0].Links["self"])
+		content, resp2 := c.GetPage(results.Results[0].Links["self"]) //nolint:bodyclose
+		defer CleanupH(resp2)
 
-		if resp.StatusCode == 200 {
+		if resp2.StatusCode == 200 {
 			//			fmt.Printf("Content: %s\n", content)
 			return results, content, nil
 		} else {
@@ -102,15 +108,17 @@ func (c *ConfluenceClient) GetPageAttachmentByID2(id string, name string) (retv 
 	path := fmt.Sprintf("/rest/api/content/%s/child/attachment?filename=%s", id, url.QueryEscape(name))
 
 	results := &ConfluenceAttachmnetSearch{}
-	c.doRequest("GET", path, nil, results)
+	_, resp := c.doRequest("GET", path, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 
 	for _, theRes := range results.Results {
 		fmt.Printf("Attachment: %s\n", theRes.Title)
 
 		if theRes.Title == name {
-			content, resp := c.GetPage(theRes.Links["download"])
+			content, resp2 := c.GetPage(theRes.Links["download"]) //nolint:bodyclose
+			defer CleanupH(resp2)
 
-			if resp.StatusCode == 200 {
+			if resp2.StatusCode == 200 {
 				// fmt.Printf("Content: %s\n", content)
 				return &theRes, content, nil
 			} else {

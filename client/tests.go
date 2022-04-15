@@ -4,6 +4,8 @@ type ConfluenceTestType struct {
 	APIEndpoint string
 	File        string
 	Method      string
+	Type        string
+	TypeFile    string
 }
 
 const (
@@ -13,5 +15,5 @@ const (
 )
 
 var ConfluenceTest = []ConfluenceTestType{
-	{APIEndpoint: "/rest/api/space", File: "../mocks/spaces.json", Method: "GET"},
+	{APIEndpoint: "/rest/api/space", File: "mocks/spaces.json", Method: "GET", Type: "ConfluenceSpaceResult", TypeFile: "client/space-dtos.go"},
 }

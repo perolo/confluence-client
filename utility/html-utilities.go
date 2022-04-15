@@ -28,7 +28,7 @@ func getBody(doc *html.Node) (*html.Node, error) {
 	return nil, errors.New("missing <body> in the node tree")
 }
 
-func stripImgs(doc *html.Node) (*html.Node, error) {
+func stripImgs(doc *html.Node) *html.Node {
 	var f func(*html.Node, *html.Node)
 	f = func(n, parent *html.Node) {
 		if parent != nil && n.Type == html.ElementNode && (strings.ToLower(n.Data) == "img" || strings.ToLower(n.Data) == "script") {
@@ -40,7 +40,7 @@ func stripImgs(doc *html.Node) (*html.Node, error) {
 		}
 	}
 	f(doc, nil)
-	return doc, nil
+	return doc
 }
 
 func renderNode(n *html.Node) string {
@@ -66,10 +66,7 @@ func StripHTML(buf []byte, bodyOnly, stripImg bool) string {
 		}
 	}
 	if stripImg {
-		doc, err = stripImgs(doc)
-		if err != nil {
-			log.Fatal(err)
-		}
+		doc = stripImgs(doc)
 	}
 	result := renderNode(doc)
 	return result

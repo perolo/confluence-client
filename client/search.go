@@ -5,6 +5,7 @@ func (c *ConfluenceClient) Search(cql string) (results *ConfluencePageSearch) {
 	results = &ConfluencePageSearch{}
 	req := "/rest/api/content/search?cql=" + cql + "&expand=body.view"
 	//	fmt.Println(req)
-	c.doRequest("GET", req, nil, results)
+	_, resp := c.doRequest("GET", req, nil, results) //nolint:bodyclose
+	defer CleanupH(resp)
 	return results
 }

@@ -30,8 +30,8 @@ func TestGetSpaces(t *testing.T) {
 
 	theClient := Client(&config)
 	spopt := SpaceOptions{Start: 0, Limit: 20, Type: "global", Status: "current"}
-	spaces, resp := theClient.GetSpaces(&spopt)
-
+	spaces, resp := theClient.GetSpaces(&spopt) //nolint:bodyclose
+	defer CleanupH(resp)
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected StatusCode 200, received: %v Spaces \n", resp.StatusCode)
 	}
@@ -56,12 +56,18 @@ func TestSpace_GetSpaces_Moc_Success(t *testing.T) {
 
 	})
 
-	spaces, _ := testClient.GetSpaces(nil)
-	if spaces == nil {
-		t.Error("Expected Spaces. Spaces is nil")
-	}
-	if spaces.Size != 1 {
-		t.Errorf("Expected 1 Space, received: %v Spaces \n", spaces.Size)
+	spaces, resp := testClient.GetSpaces(nil) //nolint:bodyclose
+	defer CleanupH(resp)
+	if resp.StatusCode == 200 {
+		if spaces == nil {
+			t.Error("Expected Spaces. Spaces is nil")
+		} else {
+			if spaces.Size != 1 {
+				t.Errorf("Expected 1 Space, received: %v Spaces \n", spaces.Size)
+			}
+		}
+	} else {
+		t.Error("Expected response 200.")
 	}
 }
 
@@ -70,7 +76,7 @@ func TestSpace_GetSpaces_Moc_File_Success(t *testing.T) {
 
 	testAPIEndpoint := ConfluenceTest[index].APIEndpoint
 
-	raw, err := ioutil.ReadFile(ConfluenceTest[index].File)
+	raw, err := ioutil.ReadFile("../" + ConfluenceTest[index].File)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -88,13 +94,22 @@ func TestSpace_GetSpaces_Moc_File_Success(t *testing.T) {
 
 	})
 
-	spaces, _ := testClient.GetSpaces(nil)
-	if spaces == nil {
-		t.Error("Expected Spaces. Spaces is nil")
+	spaces, resp := testClient.GetSpaces(nil) //nolint:bodyclose
+	defer CleanupH(resp)
+
+	if resp.StatusCode == 200 {
+
+		if spaces == nil {
+			t.Error("Expected Spaces. Spaces is nil")
+		} else {
+			if spaces.Size != 1 {
+				t.Errorf("Expected 1 Space, received: %v Spaces \n", spaces.Size)
+			}
+		}
+	} else {
+		t.Error("Expected response 200.")
 	}
-	if spaces.Size != 1 {
-		t.Errorf("Expected 1 Space, received: %v Spaces \n", spaces.Size)
-	}
+
 }
 
 // setup sets up a test HTTP server along with a jira.Client that is configured to talk to that test server.

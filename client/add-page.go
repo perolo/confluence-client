@@ -61,8 +61,17 @@ func (c *ConfluenceClient) AddPage(title, spaceKey, filepath string, bodyOnly, s
 	}
 	response := &ConfluencePage{}
 	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
-	c.doRequest("POST", "/rest/api/content/", page, response)
+	_, resp := c.doRequest("POST", "/rest/api/content/", page, response) //nolint:bodyclose
+	defer CleanupH(resp)
 	//log.Println("ConfluencePage Object Response", response)
+}
+
+func CleanupH(resp *http.Response) {
+	// fmt.Println("Running Cleanup...")
+	err := resp.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // UpdatePage adds a new page to the space with the given title
@@ -77,7 +86,8 @@ func (c *ConfluenceClient) UpdatePage(title, spaceKey, filepath string, bodyOnly
 	}
 	response := &ConfluencePage{}
 	page.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
-	c.doRequest("PUT", "/rest/api/content/"+id, page, response)
+	_, resp := c.doRequest("PUT", "/rest/api/content/"+id, page, response) //nolint:bodyclose
+	defer CleanupH(resp)
 	log.Println("ConfluencePage Object Response", response)
 	return response.Status == "current"
 }
@@ -87,7 +97,8 @@ func (c *ConfluenceClient) DeletePage(title string, spaceKey string) bool {
 	if results.Size == 1 {
 		log.Println("Page found, Deleting page...")
 		var response *http.Response
-		c.doRequest("DELETE", "/rest/api/content/"+results.Results[0].ID, nil, response)
+		_, resp := c.doRequest("DELETE", "/rest/api/content/"+results.Results[0].ID, nil, response) //nolint:bodyclose
+		defer CleanupH(resp)
 		return true
 	} else {
 		return false
