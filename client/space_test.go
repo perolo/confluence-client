@@ -25,7 +25,7 @@ func TestGetSpaces(t *testing.T) {
 	config.Username = "admin"
 	config.Password = "admin"
 	config.UseToken = false
-	config.URL = "http://localhost:1990/confluence"
+	config.URL = "http://192.168.68.107:1990/confluence"
 	config.Debug = true
 
 	theClient := Client(&config)
@@ -44,7 +44,6 @@ func TestGetSpaces(t *testing.T) {
 func TestSpace_GetSpaces_Moc_Success(t *testing.T) {
 	setup()
 	defer teardown()
-	//	testMux.HandleFunc("http://localhost:1990/confluence/rest/api/space", func(w http.ResponseWriter, r *http.Request) {
 	testMux.HandleFunc("/rest/api/space", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
 		testRequestURL(t, r, "/rest/api/space")
