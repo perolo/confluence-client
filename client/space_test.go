@@ -20,6 +20,7 @@ var (
 	testServer *httptest.Server
 )
 
+/*
 func TestGetSpaces(t *testing.T) {
 	var config = ConfluenceConfig{}
 	config.Username = "admin"
@@ -38,8 +39,8 @@ func TestGetSpaces(t *testing.T) {
 	if spaces.Size != 1 {
 		t.Errorf("Expected 1 Space, received: %v Spaces \n", spaces.Size)
 	}
-
 }
+*/
 
 func TestSpace_GetSpaces_Moc_Success(t *testing.T) {
 	setup()
