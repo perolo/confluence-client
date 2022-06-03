@@ -20,16 +20,21 @@ var (
 	testServer *httptest.Server
 )
 
-/*
 func TestGetSpaces(t *testing.T) {
-	var config = ConfluenceConfig{}
-	config.Username = "admin"
-	config.Password = "admin"
-	config.UseToken = false
-	config.URL = "http://192.168.68.107:1990/confluence"
-	config.Debug = true
+	/*
+		var config = ConfluenceConfig{}
+		config.Username = "admin"
+		config.Password = "admin"
+		config.UseToken = false
+		config.URL = "http://192.168.68.107:1990/confluence"
+		config.Debug = true
+	*/
+	tp := client.BasicAuthTransport{
+		Username: "admin",
+		Password: "admin",
+	}
 
-	theClient := Client(&config)
+	theClient := NewClient("http://localhost:1990/confluence")
 	spopt := SpaceOptions{Start: 0, Limit: 20, Type: "global", Status: "current"}
 	spaces, resp := theClient.GetSpaces(&spopt) //nolint:bodyclose
 	defer CleanupH(resp)
@@ -40,7 +45,6 @@ func TestGetSpaces(t *testing.T) {
 		t.Errorf("Expected 1 Space, received: %v Spaces \n", spaces.Size)
 	}
 }
-*/
 
 func TestSpace_GetSpaces_Moc_Success(t *testing.T) {
 	setup()

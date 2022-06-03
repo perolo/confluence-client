@@ -2,24 +2,27 @@ package client
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
-	"time"
 )
+
+type httpClient interface {
+	Do(request *http.Request) (response *http.Response, err error)
+}
 
 // ConfluenceClient is the primary client to the Confluence API
 type ConfluenceClient struct {
-	username string
-	password string
-	baseURL  string
-	debug    bool
-	usetoken bool
-	client   *http.Client
+	client http.Client
+	//	username string
+	//	password string
+	baseURL string
+	debug   bool
+	//	usetoken bool
 }
 
 // OperationOptions holds all the options that apply to the specified operation
@@ -34,21 +37,31 @@ type OperationOptions struct {
 }
 
 // Client returns a new instance of the client
-func Client(config *ConfluenceConfig) *ConfluenceClient {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
+func NewClient(httpClient httpClient, baseURL string) (*ConfluenceClient, error) {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+	// ensure the baseURL contains a trailing slash so that all paths are preserved in later calls
+	if !strings.HasSuffix(baseURL, "/") {
+		baseURL += "/"
 	}
 
-	return &ConfluenceClient{
-		username: config.Username,
-		password: config.Password,
-		baseURL:  config.URL,
-		usetoken: config.UseToken,
-		debug:    config.Debug,
-		client: &http.Client{
-			Timeout: 60 * time.Second, Transport: tr,
-		},
+	parsedBaseURL, err := url.Parse(baseURL)
+	if err != nil {
+		return nil, err
 	}
+	c := &Client{
+		client:  httpClient,
+		baseURL: parsedBaseURL,
+	}
+
+	return c, nil
+}
+
+func (s *AuthenticationService) SetBasicAuth(username, password string) {
+	s.username = username
+	s.password = password
+	s.authType = authTypeBasic
 }
 
 func SetTokenAuth(r *http.Request, password string) {

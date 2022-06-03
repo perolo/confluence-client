@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ChimeraCoder/gojson"
 	"github.com/perolo/confluence-client/client"
+	"github.com/perolo/gojson"
 	"io/ioutil"
 	"log"
 	"strings"
