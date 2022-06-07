@@ -1,13 +1,14 @@
-package main
+package client
 
 import (
 	"flag"
 	"fmt"
-	"github.com/perolo/confluence-client/client"
-	"github.com/perolo/gojson"
 	"io/ioutil"
 	"log"
 	"strings"
+
+	"github.com/perolo/confluence-client/client"
+	"github.com/perolo/gojson"
 )
 
 //"rogchap.com/v8go"

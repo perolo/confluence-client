@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"testing"
@@ -7,4 +7,3 @@ import (
 func Test_Main_dummy(t *testing.T) {
 
 }
-
